@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="dark" data-layout-mode="fluid" data-menu-color="dark" data-topbar-color="dark" data-layout-position="fixed" data-sidenav-size="default" data-sidenav-user="true"><head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Hệ thống quản lý đào tạo trường đại học CTL">
+    <meta http-equiv="Content-Language" content="vi">
+    <title>Trang chủ - CAP - CTL Education</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0f1d">
+    <meta name="msapplication-tap-highlight" content="no">
+    <link rel="icon" type="image/svg+xml" href="/assets/images/logo-ctl.svg">
+
+    <!-- Theme config must stay before app CSS so first paint matches user preference -->
+    <script src="./assets/vendor/jidox/js/config.js?v=olVZ9PNYDStm4FSs_It9wc6BDC81ieH5H7wmDf6RkSk"></script>
+
+
+    <link href="./assets/vendor/jidox/css/app.min.css?v=uwzQyW6ncv2y4lo_lTavtZsztf93EHG1q3OeWVn1ykM" rel="stylesheet" type="text/css" id="app-style">
+    <link href="./assets/vendor/jidox/css/icons.min.css?v=TF2eguq2Tj8iHPf9IbYjWUU02iWlNOxMDB7m749-fBc" rel="stylesheet" type="text/css">
+    <link href="./assets/vendor/flatpickr/flatpickr.min.css?v=GzSkJVLJbxDk36qko2cnawOGiqz_Y8GsQv_jMTUrx1Q" rel="stylesheet">
+    <link href="./assets/vendor/jquery-toast-plugin/jquery.toast.min.css?v=WolrNTZ9lY0QL5f0_Qi1yw3RGnDLig2HVLYkrshm7Y0" rel="stylesheet">
+    <link href="./css/style.css?v=aIictFdY2fGJ_OROu1-YRC_T5lxe1gi7c3MbHRbtCkg" rel="stylesheet">
+    
+    <link href="./css/home.css?v=GJuKybqwhO7i40mot79P_CR29fw75OoD1kVNvFnepkI" rel="stylesheet">
+
+
+
+    <!-- CTL University Royal Amethyst & Violet Theme -->
+    <style id="ctl-theme-overrides">
+      :root {
+        --ctl-primary: #7c3aed;
+        --ctl-primary-rgb: 124, 58, 237;
+        --ctl-secondary: #a855f7;
+        --ctl-accent: #c084fc;
+        --ct-primary: #7c3aed !important;
+        --ct-primary-rgb: 124, 58, 237 !important;
+      }
+
+      /* ==================== LIGHT THEME ==================== */
+      html[data-bs-theme="light"],
+      body[data-bs-theme="light"],
+      :root:not([data-bs-theme="dark"]) {
+        --ct-body-bg: #f5f4fb !important;
+        --ct-body-color: #1e1b4b !important;
+        --ct-border-color: #e2e0f0 !important;
+        --ct-card-bg: #ffffff !important;
+      }
+      html[data-bs-theme="light"] body,
+      html[data-bs-theme="light"] .content-page,
+      html[data-bs-theme="light"] .wrapper,
+      html[data-bs-theme="light"] .content,
+      html[data-bs-theme="light"] .container-fluid,
+      html[data-bs-theme="light"] .page-title-box {
+        background-color: #f5f4fb !important;
+        color: #1e1b4b !important;
+      }
+      html[data-bs-theme="light"] .card {
+        background-color: #ffffff !important;
+        border: 1px solid rgba(124, 58, 237, 0.12) !important;
+        box-shadow: 0 4px 18px rgba(124, 58, 237, 0.05) !important;
+        color: #1e1b4b !important;
+      }
+      html[data-bs-theme="light"] .card-body {
+        color: #1e1b4b !important;
+      }
+      html[data-bs-theme="light"] .navbar-custom,
+      html[data-bs-theme="light"] .cap-topbar,
+      html[data-bs-theme="light"] .fap-topbar {
+        background-color: #ffffff !important;
+        border-bottom: 1px solid rgba(124, 58, 237, 0.14) !important;
+      }
+      html[data-bs-theme="light"] .leftside-menu,
+      html[data-bs-theme="light"] .cap-sidebar,
+      html[data-bs-theme="light"] .fap-sidebar {
+        background-color: #ffffff !important;
+        border-right: 1px solid rgba(124, 58, 237, 0.14) !important;
+      }
+      html[data-bs-theme="light"] .side-nav-link {
+        color: #475569 !important;
+      }
+      html[data-bs-theme="light"] .side-nav-link:hover {
+        color: #7c3aed !important;
+        background-color: rgba(124, 58, 237, 0.06) !important;
+      }
+      html[data-bs-theme="light"] .side-nav-link.active {
+        color: #7c3aed !important;
+        background-color: rgba(124, 58, 237, 0.12) !important;
+        border-left: 3px solid #7c3aed !important;
+        font-weight: 600;
+      }
+      html[data-bs-theme="light"] .side-nav-title {
+        color: #6d28d9 !important;
+        font-weight: 700;
+      }
+      html[data-bs-theme="light"] .fap-page-title__crumb-current,
+      html[data-bs-theme="light"] .cap-page-title__crumb-current,
+      html[data-bs-theme="light"] .page-title {
+        color: #1e1b4b !important;
+        font-weight: 700 !important;
+      }
+      html[data-bs-theme="light"] .fap-page-title__crumb-link,
+      html[data-bs-theme="light"] .breadcrumb-item a {
+        color: #7c3aed !important;
+      }
+      html[data-bs-theme="light"] .text-muted {
+        color: #64748b !important;
+      }
+      html[data-bs-theme="light"] .footer {
+        background-color: #ffffff !important;
+        border-top: 1px solid rgba(124, 58, 237, 0.1) !important;
+        color: #64748b !important;
+      }
+      html[data-bs-theme="light"] .dropdown-menu {
+        background-color: #ffffff !important;
+        border: 1px solid rgba(124, 58, 237, 0.15) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+        color: #1e1b4b !important;
+      }
+      html[data-bs-theme="light"] .dropdown-item {
+        color: #334155 !important;
+      }
+      html[data-bs-theme="light"] .dropdown-item:hover {
+        background-color: rgba(124, 58, 237, 0.08) !important;
+        color: #7c3aed !important;
+      }
+
+      /* ==================== DARK THEME ==================== */
+      html[data-bs-theme="dark"],
+      body[data-bs-theme="dark"] {
+        --ct-body-bg: #0c0a1a !important;
+        --ct-body-color: #f8fafc !important;
+        --ct-card-bg: #15122a !important;
+      }
+      html[data-bs-theme="dark"] body,
+      html[data-bs-theme="dark"] .content-page,
+      html[data-bs-theme="dark"] .wrapper,
+      html[data-bs-theme="dark"] .content,
+      html[data-bs-theme="dark"] .container-fluid,
+      html[data-bs-theme="dark"] .page-title-box {
+        background-color: #0c0a1a !important;
+        color: #f8fafc !important;
+      }
+      html[data-bs-theme="dark"] .card {
+        background-color: #15122a !important;
+        border: 1px solid rgba(168, 85, 247, 0.16) !important;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45) !important;
+        color: #f8fafc !important;
+      }
+      html[data-bs-theme="dark"] .card-body {
+        color: #f8fafc !important;
+      }
+      html[data-bs-theme="dark"] .navbar-custom,
+      html[data-bs-theme="dark"] .cap-topbar,
+      html[data-bs-theme="dark"] .fap-topbar {
+        background-color: #110e24 !important;
+        border-bottom: 1px solid rgba(168, 85, 247, 0.18) !important;
+      }
+      html[data-bs-theme="dark"] .leftside-menu,
+      html[data-bs-theme="dark"] .cap-sidebar,
+      html[data-bs-theme="dark"] .fap-sidebar {
+        background-color: #100d22 !important;
+        border-right: 1px solid rgba(168, 85, 247, 0.18) !important;
+      }
+      html[data-bs-theme="dark"] .side-nav-link {
+        color: #94a3b8 !important;
+      }
+      html[data-bs-theme="dark"] .side-nav-link:hover {
+        color: #c084fc !important;
+        background-color: rgba(168, 85, 247, 0.1) !important;
+      }
+      html[data-bs-theme="dark"] .side-nav-link.active {
+        color: #c084fc !important;
+        background: rgba(124, 58, 237, 0.22) !important;
+        border-left: 3px solid #a855f7 !important;
+        font-weight: 600;
+      }
+      html[data-bs-theme="dark"] .side-nav-title {
+        color: #a78bfa !important;
+        font-weight: 700;
+      }
+      html[data-bs-theme="dark"] .fap-page-title__crumb-current,
+      html[data-bs-theme="dark"] .cap-page-title__crumb-current,
+      html[data-bs-theme="dark"] .page-title {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        text-shadow: 0 0 10px rgba(168, 85, 247, 0.5) !important;
+      }
+      html[data-bs-theme="dark"] .fap-page-title__crumb-link,
+      html[data-bs-theme="dark"] .breadcrumb-item a {
+        color: #c084fc !important;
+      }
+      html[data-bs-theme="dark"] .text-muted {
+        color: #94a3b8 !important;
+      }
+      html[data-bs-theme="dark"] .footer {
+        background-color: #110e24 !important;
+        border-top: 1px solid rgba(168, 85, 247, 0.15) !important;
+        color: #94a3b8 !important;
+      }
+      html[data-bs-theme="dark"] .dropdown-menu {
+        background-color: #171330 !important;
+        border: 1px solid rgba(168, 85, 247, 0.25) !important;
+        color: #f8fafc !important;
+      }
+      html[data-bs-theme="dark"] .dropdown-item {
+        color: #e2e8f0 !important;
+      }
+      html[data-bs-theme="dark"] .dropdown-item:hover {
+        background-color: rgba(168, 85, 247, 0.15) !important;
+        color: #c084fc !important;
+      }
+
+      /* ==================== COMMON BRAND ELEMENTS ==================== */
+      .fap-page-title__crumb-current,
+      .cap-page-title__crumb-current {
+        font-size: 1.15rem !important;
+        font-weight: 700 !important;
+      }
+
+      .btn-primary, .btn-ctl-primary {
+        background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%) !important;
+        border-color: #7c3aed !important;
+        box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35) !important;
+        color: #ffffff !important;
+      }
+      .btn-primary:hover, .btn-ctl-primary:hover {
+        background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%) !important;
+        border-color: #8b5cf6 !important;
+        box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45) !important;
+        color: #ffffff !important;
+      }
+
+      .fap-home-student-card__left,
+      .cap-home-student-card__left {
+        background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 55%, #a855f7 100%) !important;
+        color: #ffffff !important;
+      }
+      .fap-home-student-card__left *,
+      .cap-home-student-card__left * {
+        color: #ffffff !important;
+      }
+      .fap-home-student-card__avatar,
+      .cap-home-student-card__avatar {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border: 2px solid rgba(255, 255, 255, 0.4) !important;
+      }
+
+      .account-user-avatar.cap-topbar-avatar,
+      .account-user-avatar.fap-topbar-avatar {
+        background: linear-gradient(135deg, #a855f7, #6d28d9) !important;
+        color: #ffffff !important;
+        font-weight: bold;
+      }
+
+      .badge-soft-primary { background: rgba(124, 58, 237, 0.18) !important; color: #7c3aed !important; }
+      .badge-soft-success { background: rgba(16, 185, 129, 0.18) !important; color: #10b981 !important; }
+      .badge-soft-warning { background: rgba(245, 158, 11, 0.18) !important; color: #f59e0b !important; }
+      .badge-soft-danger { background: rgba(239, 68, 68, 0.18) !important; color: #ef4444 !important; }
+      .badge-soft-info { background: rgba(14, 165, 233, 0.18) !important; color: #0ea5e9 !important; }
+
+      .logo-topbar .logo-lg img { height: 38px !important; width: auto !important; max-width: 210px !important; }
+      .leftside-menu .logo-lg img { height: 44px !important; width: auto !important; max-width: 220px !important; }
+      .logo-topbar .logo-sm img, .leftside-menu .logo-sm img { height: 34px !important; width: 34px !important; }
+    </style>
+    <script>
+      (function() {
+        function applyTheme(theme) {
+          document.documentElement.setAttribute('data-bs-theme', theme);
+          document.documentElement.setAttribute('data-topbar-color', theme);
+          document.documentElement.setAttribute('data-menu-color', theme);
+          localStorage.setItem('ctl_theme', theme);
+          try {
+            sessionStorage.setItem('__CONFIG__', JSON.stringify({
+              theme: theme,
+              nav: 'vertical',
+              layout: { mode: 'fluid', position: 'fixed' },
+              topbar: { color: theme },
+              menu: { color: theme },
+              sidenav: { size: 'default', user: true }
+            }));
+            if (window.config) {
+              window.config.theme = theme;
+              if (window.config.topbar) window.config.topbar.color = theme;
+              if (window.config.menu) window.config.menu.color = theme;
+            }
+          } catch(e) {}
+          const icon = document.querySelector('#light-dark-mode i');
+          if (icon) {
+            icon.className = theme === 'dark' ? 'ri-sun-line fs-22' : 'ri-moon-line fs-22';
+          }
+        }
+        const savedTheme = localStorage.getItem('ctl_theme') || 'dark';
+        applyTheme(savedTheme);
+
+        window.addEventListener('DOMContentLoaded', function() {
+          const curr = localStorage.getItem('ctl_theme') || 'dark';
+          applyTheme(curr);
+          const btn = document.getElementById('light-dark-mode');
+          if (btn) {
+            btn.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              const c = document.documentElement.getAttribute('data-bs-theme');
+              const next = c === 'dark' ? 'light' : 'dark';
+              applyTheme(next);
+            }, true);
+          }
+        });
+      })();
+</script>
+
+</head>
+<body>
+    <div id="preloader" style="display: none;">
+    <div id="status" style="display: none;">
+        <div class="bouncing-loader"><div></div><div></div><div></div></div>
+    </div>
+</div>
+
+    <!-- Begin page — no full-page #preloader (it waits window.load and delays FCP) -->
+    <div class="wrapper">
+
+            
+        <!-- ========== Topbar Start ========== -->
+        <div class="navbar-custom">
+            <div class="topbar container-fluid fap-topbar">
+                <div class="d-flex align-items-center gap-lg-2 gap-1 fap-topbar__brand">
+
+                    <!-- Topbar Brand Logo -->
+                    <div class="logo-topbar">
+                        <!-- Logo light -->
+                        <a class="logo-light" href="/">
+                            <span class="logo-lg">
+                                <img src="./assets/images/logo-ctlu.svg" alt="CTL University" width="160" height="48" fetchpriority="high" decoding="async">
+                            </span>
+                            <span class="logo-sm">
+                                <img src="./assets/images/logo-ctl.svg" alt="CTL" width="32" height="32" decoding="async">
+                            </span>
+                        </a>
+
+                        <!-- Logo Dark -->
+                        <a class="logo-dark" href="/">
+                            <span class="logo-lg">
+                                <img src="./assets/images/logo-ctlu.svg" alt="" width="160" height="48" loading="lazy" decoding="async">
+                            </span>
+                            <span class="logo-sm">
+                                <img src="./assets/images/logo-ctl.svg" alt="" width="32" height="32" loading="lazy" decoding="async">
+                            </span>
+                        </a>
+                    </div>
+
+                    <!-- Sidebar Menu Toggle Button -->
+                    <button type="button" class="button-toggle-menu" aria-label="Toggle sidebar">
+                        <i class="ri-menu-2-fill" aria-hidden="true"></i>
+                    </button>
+
+                    <!-- Horizontal Menu Toggle Button -->
+                    <button class="navbar-toggle" data-bs-toggle="collapse" data-bs-target="#topnav-menu-content">
+                        <div class="lines">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </button>
+                </div>
+
+                <ul class="topbar-menu d-flex align-items-center gap-2 fap-topbar__menu">
+
+                    
+
+    <li class="dropdown jidox-campus-topbar">
+            <button type="button" class="nav-link dropdown-toggle arrow-none jidox-campus-topbar__static" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" title="Cơ sở Hà Nội (HN)" aria-label="Campus">
+                <i class="ri-map-pin-2-line align-middle me-0 me-sm-1"></i>
+                <span class="align-middle d-none d-lg-inline-block">Cơ sở Hà Nội (HN)</span>
+                <i class="ri-arrow-down-s-line d-none d-sm-inline-block align-middle"></i>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated jidox-campus-topbar__menu">
+                <div class="dropdown-header noti-title py-2">
+                    <h6 class="text-overflow m-0">Campus</h6>
+                </div>
+                <div class="dropdown-item-text jidox-campus-topbar__info">
+                    <div class="jidox-campus-topbar__info-icon" aria-hidden="true">
+                        <i class="ri-building-4-line"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="fw-semibold text-body">
+                            Cơ sở Hà Nội (HN)
+                        </div>
+                            <div class="small text-muted">
+                                HN
+                                    <span class="text-primary"> - Chính</span>
+                            </div>
+                    </div>
+                </div>
+            </div>
+    </li>
+
+
+                    <li class="dropdown">
+                        <a class="nav-link dropdown-toggle arrow-none fap-topbar-pill fap-language-toggle" data-bs-toggle="dropdown" href="#" aria-haspopup="false" aria-expanded="false" aria-label="Chọn ngôn ngữ" title="Chọn ngôn ngữ">
+                            <img src="./assets/images/flags/vn.jpg" alt="culture-flag" class="me-0 me-sm-1" height="12">
+                            <span class="align-middle d-none d-lg-inline-block">Tiếng Việt</span> <i class="ri-arrow-down-s-line d-none d-sm-inline-block align-middle"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated">
+                            <form method="post" class="px-2 py-1" action="/Language/SetLanguage">
+                                <input type="hidden" name="returnUrl" value="/">
+                                <button type="submit" name="culture" value="vi" class="dropdown-item active">
+                                    <img src="./assets/images/flags/vn.jpg" alt="flag-vi" class="me-1" height="12"> <span class="align-middle">Tiếng Việt</span>
+                                </button>
+                                <button type="submit" name="culture" value="en" class="dropdown-item ">
+                                    <img src="./assets/images/flags/gb.jpg" alt="flag-en" class="me-1" height="12"> <span class="align-middle">English</span>
+                                </button>
+                            <input name="__RequestVerificationToken" type="hidden" value="CfDJ8IPsJUoLRnlMl9hToTu1vBw8Tlfw7FEI1ghR7Ph8M1w0iiUsSZUhVxlY6JCBBxwtjUDwlefviI0lRjifp_QF7K1Ei3Cr5lWBVOaAhCnuMc9gas0iQNAjvBg-STUzyhSI6vQkRYxDKwt5Pks7O3kKgyeE-IXsf4s-aKKn0ffbcgSx2tgw4mHS648N56rmibJPOA"></form>
+                        </div>
+                    </li>
+
+                    <li class="dropdown notification-list jidox-notification-bell" data-notification-panel="true" data-load-url="/Notification/BellList" data-unread-url="/Notification/UnreadCount" data-mark-read-url="/Notification/MarkRead" data-mark-all-read-url="/Notification/MarkReadAll" data-page-size="5" data-load-failed="Không tải được danh sách thông báo." data-default-title="Thông báo mới" data-just-now="Vừa xong" data-mark-read="Đã đọc">
+                        <a class="nav-link dropdown-toggle arrow-none jidox-notification-bell__toggle fap-topbar-icon" data-bs-toggle="dropdown" data-bs-auto-close="outside" href="#" aria-haspopup="false" aria-expanded="false" aria-label="Thông báo" title="Thông báo">
+                            <span class="jidox-notification-bell__icon-wrap">
+                                <i class="ri-notification-4-line fs-22"></i>
+                                <span class="jidox-notification-bell__badge" data-notification-badge="true"></span>
+                            </span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated dropdown-lg py-0 jidox-notification-bell__menu">
+                            <div class="jidox-notification-bell__header p-2 border-top-0 border-start-0 border-end-0 border-dashed border">
+                                <div class="d-flex align-items-center gap-2">
+                                    <h6 class="m-0 fs-16 fw-medium">Thông báo</h6>
+                                    <button type="button" class="btn btn-sm btn-soft-primary ms-auto me-1 jidox-notification-bell__mark-all" data-notification-mark-all="true">
+                                        Đã đọc tất cả
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div data-simplebar="init" data-notification-list="true" class="notification-bell-list"><div class="simplebar-wrapper" style="margin: 0px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" tabindex="0" role="region" aria-label="scrollable content" style="height: auto; overflow: hidden;"><div class="simplebar-content" style="padding: 0px;">
+                                <div class="dropdown-item text-muted">Đang tải thông báo...</div>
+                            </div></div></div></div><div class="simplebar-placeholder" style="width: auto; height: 33px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: hidden;"><div class="simplebar-scrollbar" style="height: 0px; display: none;"></div></div></div>
+                        </div>
+                    </li>
+
+                    <li class="d-none d-sm-inline-block">
+                        <div class="nav-link fap-topbar-icon" id="light-dark-mode">
+                            <i class="ri-moon-fill fs-22"></i>
+                        </div>
+                    </li>
+
+
+                    <li class="d-none d-md-inline-block">
+                        <a class="nav-link fap-topbar-icon" href="" data-toggle="fullscreen" aria-label="Fullscreen" title="Fullscreen">
+                            <i class="ri-fullscreen-line fs-22"></i>
+                        </a>
+                    </li>
+
+                    <li class="dropdown me-md-2">
+                        <a class="nav-link dropdown-toggle arrow-none nav-user px-2 fap-topbar-user" data-bs-toggle="dropdown" href="#" aria-haspopup="false" aria-expanded="false">
+                            <span class="account-user-avatar fap-topbar-avatar" aria-hidden="true">CTL</span>
+                            <span class="d-lg-flex flex-column gap-1 d-none">
+                                <h5 class="my-0">Cao Thanh Lâm</h5>
+                                <h6 class="my-0 fw-normal">CT193667</h6>
+                            </span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated profile-dropdown">
+                            <!-- item-->
+                            <div class=" dropdown-header noti-title">
+                                <h6 class="text-overflow m-0">Cao Thanh Lâm</h6>
+                                <small class="text-muted">CT193667</small>
+                            </div>
+
+
+                            <!-- item-->
+                            <a class="dropdown-item" href="/Account">
+                                <i class="ri-account-circle-fill align-middle me-1"></i>
+                                <span>My Account</span>
+                            </a>
+                                <form method="post" class="px-0 mb-0" action="/Auth/Logout">
+                                    <button type="submit" class="dropdown-item border-0 bg-transparent w-100 text-start">
+                                        <i class="ri-logout-box-fill align-middle me-1"></i>
+                                        <span>Đăng xuất</span>
+                                    </button>
+                                <input name="__RequestVerificationToken" type="hidden" value="CfDJ8IPsJUoLRnlMl9hToTu1vBw8Tlfw7FEI1ghR7Ph8M1w0iiUsSZUhVxlY6JCBBxwtjUDwlefviI0lRjifp_QF7K1Ei3Cr5lWBVOaAhCnuMc9gas0iQNAjvBg-STUzyhSI6vQkRYxDKwt5Pks7O3kKgyeE-IXsf4s-aKKn0ffbcgSx2tgw4mHS648N56rmibJPOA"></form>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- ========== Topbar End ========== -->
+        <!-- ========== Left Sidebar Start ========== -->
+        
+
+<aside class="leftside-menu fap-sidebar" aria-label="Main navigation">
+    <a class="logo logo-light" href="/">
+        <span class="logo-lg">
+            <img src="./assets/images/logo-ctlu.svg" alt="CTL University" width="160" height="70" decoding="async">
+        </span>
+        <span class="logo-sm">
+            <img src="./assets/images/logo-ctl.svg" alt="CTL" width="32" height="32" decoding="async">
+        </span>
+    </a>
+
+    <a class="logo logo-dark" aria-hidden="true" tabindex="-1" href="/">
+        <span class="logo-lg">
+            <img src="./assets/images/logo-ctlu.svg" alt="" width="160" height="70" loading="lazy" decoding="async">
+        </span>
+        <span class="logo-sm">
+            <img src="./assets/images/logo-ctl.svg" alt="" width="32" height="32" loading="lazy" decoding="async">
+        </span>
+    </a>
+
+    <div class="button-sm-hover" data-bs-toggle="tooltip" data-bs-placement="right" aria-label="Show Full Sidebar" data-bs-original-title="Show Full Sidebar">
+        <i class="ri-checkbox-blank-circle-line align-middle" aria-hidden="true"></i>
+    </div>
+
+    <div class="button-close-fullsidebar" role="button" tabindex="0" aria-label="Close menu">
+        <i class="ri-close-fill align-middle" aria-hidden="true"></i>
+    </div>
+
+    <div class="h-100 fap-sidebar__scroll" id="leftside-menu-container" data-simplebar="init"><div class="simplebar-wrapper" style="margin: 0px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" tabindex="0" role="region" aria-label="scrollable content" style="height: 100%; overflow: hidden scroll;"><div class="simplebar-content" style="padding: 0px;">
+        <ul class="side-nav">
+            <li class="side-nav-title mt-1">Học tập</li>
+<li class="side-nav-item">
+    <a data-bs-toggle="collapse" href="#sidebar-lich-hoc" aria-expanded="false" aria-controls="sidebar-lich-hoc" class="side-nav-link">
+        <i class="ri-calendar-2-line"></i>
+        <span>Lịch học</span>
+        <span class="menu-arrow"></span>
+    </a>
+    <div class="collapse" id="sidebar-lich-hoc">
+        <ul class="side-nav-second-level">
+            
+<li class="side-nav-item">
+    <a href="/WeeklyTimetable" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Thời khóa biểu</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a href="/ExamSchedule" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Lịch thi</span>
+    </a>
+</li>
+        </ul>
+    </div>
+</li>
+<li class="side-nav-item">
+    <a data-bs-toggle="collapse" href="#sidebar-bao-cao" aria-expanded="false" aria-controls="sidebar-bao-cao" class="side-nav-link">
+        <i class="ri-bar-chart-box-line"></i>
+        <span>Báo cáo học tập</span>
+        <span class="menu-arrow"></span>
+    </a>
+    <div class="collapse" id="sidebar-bao-cao">
+        <ul class="side-nav-second-level">
+            
+<li class="side-nav-item">
+    <a href="/Report/Attendance" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Báo cáo điểm danh</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a href="/Report/Grade" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Báo cáo điểm</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a href="/Report/Transcript" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Bảng điểm</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a href="/Report/OjtConditions" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Điều kiện OJT</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a href="/Report/ThesisConditions" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Điều kiện KLTN</span>
+    </a>
+</li>
+        </ul>
+    </div>
+</li>
+<li class="side-nav-item">
+    <a data-bs-toggle="collapse" href="#sidebar-mon-hoc" aria-expanded="false" aria-controls="sidebar-mon-hoc" class="side-nav-link">
+        <i class="ri-book-mark-line"></i>
+        <span>Môn học &amp; chương trình</span>
+        <span class="menu-arrow"></span>
+    </a>
+    <div class="collapse" id="sidebar-mon-hoc">
+        <ul class="side-nav-second-level">
+            
+<li class="side-nav-item">
+    <a href="/Subject" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Môn học</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a href="/Curriculum" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Khung chương trình</span>
+    </a>
+</li>
+        </ul>
+    </div>
+</li>
+<li class="side-nav-item">
+    <a href="/MyCertificates" class="side-nav-link">
+        <i class="ri-award-line"></i>
+        <span>Chứng chỉ</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a data-bs-toggle="collapse" href="#sidebar-tin-tuc" aria-expanded="false" aria-controls="sidebar-tin-tuc" class="side-nav-link">
+        <i class="ri-newspaper-line"></i>
+        <span>Tin tức &amp; tài liệu</span>
+        <span class="menu-arrow"></span>
+    </a>
+    <div class="collapse" id="sidebar-tin-tuc">
+        <ul class="side-nav-second-level">
+            
+<li class="side-nav-item">
+    <a href="/News" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Tin tức</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a href="/Document" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Tài liệu</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a href="/Document/DrivePdf" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Hướng dẫn sử dụng</span>
+    </a>
+</li>
+        </ul>
+    </div>
+</li><li class="side-nav-title mt-1">Đơn từ</li>
+<li class="side-nav-item">
+    <a href="/Application" class="side-nav-link">
+        <i class="ri-file-list-3-line"></i>
+        <span>Xem đơn</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a href="/Application/Catalog" class="side-nav-link">
+        <i class="ri-file-edit-line"></i>
+        <span>Gửi đơn</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a href="/CrossClassChange" class="side-nav-link">
+        <i class="ri-exchange-line"></i>
+        <span>Đơn đổi lớp chéo</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a data-bs-toggle="collapse" href="#sidebar-don-khoi-nghiep" aria-expanded="false" aria-controls="sidebar-don-khoi-nghiep" class="side-nav-link">
+        <i class="ri-lightbulb-line"></i>
+        <span>Đơn khởi nghiệp</span>
+        <span class="menu-arrow"></span>
+    </a>
+    <div class="collapse" id="sidebar-don-khoi-nghiep">
+        <ul class="side-nav-second-level">
+            
+<li class="side-nav-item">
+    <a href="/StartupGroup" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Danh sách đơn khởi nghiệp</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a href="/StartupGroup/Add" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Gửi đơn khởi nghiệp</span>
+    </a>
+</li>
+        </ul>
+    </div>
+</li><li class="side-nav-title mt-1">Tài chính</li>
+<li class="side-nav-item">
+    <a data-bs-toggle="collapse" href="#sidebar-thanh-toan" aria-expanded="false" aria-controls="sidebar-thanh-toan" class="side-nav-link">
+        <i class="ri-bank-card-line"></i>
+        <span>Thanh toán</span>
+        <span class="menu-arrow"></span>
+    </a>
+    <div class="collapse" id="sidebar-thanh-toan">
+        <ul class="side-nav-second-level">
+            
+<li class="side-nav-item">
+    <a href="/ShoppingCart" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Thanh toán các khoản phí</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a href="/CoursePendingPayment" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Phí xếp lớp</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a href="/Transaction" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Lịch sử giao dịch</span>
+    </a>
+</li>
+        </ul>
+    </div>
+</li><li class="side-nav-title mt-1">Wishlist</li>
+<li class="side-nav-item">
+    <a href="/Wishlist" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Danh sách chờ lớp</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a href="/Wishlist/Register" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Đăng ký wishlist</span>
+    </a>
+</li><li class="side-nav-title mt-1">Hoạt động sinh viên</li>
+<li class="side-nav-item">
+    <a data-bs-toggle="collapse" href="#sidebar-fye" aria-expanded="false" aria-controls="sidebar-fye" class="side-nav-link">
+        <i class="ri-heart-pulse-line"></i>
+        <span>FYE</span>
+        <span class="menu-arrow"></span>
+    </a>
+    <div class="collapse" id="sidebar-fye">
+        <ul class="side-nav-second-level">
+            
+<li class="side-nav-item">
+    <a href="/FyeCheckInLog" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Check-in Log</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a href="/FyeMentorFeedback" class="side-nav-link">
+        <i class="ri-menu-line"></i>
+        <span>Feedback Mentor</span>
+    </a>
+</li>
+        </ul>
+    </div>
+</li><li class="side-nav-title mt-1">Tài khoản</li>
+<li class="side-nav-item">
+    <a data-bs-toggle="collapse" href="#sidebar-ca-nhan" aria-expanded="false" aria-controls="sidebar-ca-nhan" class="side-nav-link">
+        <i class="ri-user-settings-line"></i>
+        <span>Cá nhân</span>
+        <span class="menu-arrow"></span>
+    </a>
+    <div class="collapse" id="sidebar-ca-nhan">
+        <ul class="side-nav-second-level">
+            
+<li class="side-nav-item">
+    <a href="/Account" class="side-nav-link">
+        <i class="ri-user-star-line"></i>
+        <span>Thông tin cá nhân</span>
+    </a>
+</li>
+<li class="side-nav-item">
+    <a href="/StudentProfile" class="side-nav-link">
+        <i class="ri-edit-box-line"></i>
+        <span>Cập nhật hồ sơ</span>
+    </a>
+</li>
+        </ul>
+    </div>
+</li>
+        </ul>
+    </div></div></div></div><div class="simplebar-placeholder" style="width: auto; height: 823px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: visible;"><div class="simplebar-scrollbar" style="height: 809px; transform: translate3d(0px, 0px, 0px); display: block;"></div></div></div>
+</aside>
+
+        <!-- ========== Left Sidebar End ========== -->
+        <!-- ============================================================== -->
+        <!-- Start Page Content here -->
+        <!-- ============================================================== -->
+
+        <div class="content-page">
+            <div class="content">
+
+                <!-- Start Content-->
+                <div class="container-fluid">
+                    
+
+                    
+
+
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box fap-page-title  justify-content-between d-flex align-items-center flex-lg-row flex-column gap-2">
+            <div class="fap-page-title__main min-w-0">
+                <nav class="fap-page-title__crumb" aria-label="breadcrumb">
+                    <ol class="fap-page-title__crumb-list">
+                        <li class="fap-page-title__crumb-item">
+                            <span class="fap-page-title__crumb-current">Chào mừng</span>
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div id="home-student-shell" data-fetch-url="/Home/StudentContentPartial" data-loading-text="Đang tải..." data-load-error-text="Không tải được danh sách tin tức." data-pinned-script-url="/js/pages/home-pinned-modal.js?v=RuV-MSAaKghUvGweeFiJuzIWz48oDva9miAczhSlumw" data-bootbox-script-url="/assets/vendor/bootbox/bootbox.all.min.js?v=9X1l4FXHBT7S00b-EA9JlUSq6VrvsvUSWMUxQ-migVE" data-payment-script-url="/js/pages/home.js?v=IER0atPmFWBtmG8z5yhAAGhciRlkKC78WnSWcnouBAM">
+        <div data-home-slot="fee"></div>
+        <div data-home-slot="student">
+            
+
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card fap-home-student-card">
+            <div class="card-body p-0">
+                <div class="row g-0 align-items-stretch">
+                    <div class="col-lg-3 fap-home-student-card__left p-4 d-flex flex-column justify-content-center">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="fap-home-student-card__avatar">
+                                <i class="ri-graduation-cap-line"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="text-white-50 small text-uppercase fw-semibold mb-1">
+                                    Thông tin sinh viên
+                                </div>
+                                <div class="fap-home-student-card__name mb-1">Cao Thanh Lâm</div>
+                                <div class="fap-home-student-card__roll">CT193667</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-9 p-4">
+                        <div class="row g-3">
+                            <div class="col-sm-6 col-xl">
+                                <div class="fap-home-student-card__metric">
+                                    <div class="fap-home-student-card__label fap-home-student-card__label--primary">
+                                        <i class="ri-shield-check-line"></i>Trạng thái
+                                    </div>
+                                    <div class="fap-home-student-card__value">HD</div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6 col-xl">
+                                <div class="fap-home-student-card__metric">
+                                    <div class="fap-home-student-card__label fap-home-student-card__label--info">
+                                        <i class="ri-book-open-line"></i>Mã chương trình
+                                    </div>
+                                    <div class="fap-home-student-card__value text-primary">BIT_IA_19A_AS</div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6 col-xl">
+                                <div class="fap-home-student-card__metric">
+                                    <div class="fap-home-student-card__label fap-home-student-card__label--warning">
+                                        <i class="ri-mail-line"></i>Email
+                                    </div>
+                                    <div class="fap-home-student-card__value text-break">lamctct193667@ctl.edu.vn</div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6 col-xl">
+                                <div class="fap-home-student-card__metric">
+                                    <div class="fap-home-student-card__label fap-home-student-card__label--secondary">
+                                        <i class="ri-calendar-line"></i>Khóa
+                                    </div>
+                                    <div class="fap-home-student-card__value">19</div>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6 col-xl">
+                                <div class="fap-home-student-card__metric fap-home-student-card__metric--wallet">
+                                    <div class="fap-home-student-card__label fap-home-student-card__label--success">
+                                        <i class="ri-wallet-3-line"></i>Số dư
+                                    </div>
+                                    <div class="fap-home-student-card__wallet-amount">
+                                        0 <span class="fs-6 fw-medium">VND</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+        </div>
+        <div class="row g-3">
+            <div class="col-lg-8">
+                <div data-home-slot="news">
+    <div class="card fap-home-news-card">
+        <div class="d-flex card-header justify-content-between align-items-center flex-wrap gap-2">
+            <h4 class="header-title m-0 fap-home-news-card__header-title">
+                <i class="ri-newspaper-line me-1 text-primary"></i>Tin tức mới nhất
+            </h4>
+            <a class="btn btn-sm btn-soft-primary" href="/News">
+                Xem tất cả <i class="ri-arrow-right-line ms-1"></i>
+            </a>
+        </div>
+            <div class="fap-home-news-card__filter">
+                <div class="d-flex flex-wrap gap-1 align-items-center">
+                    <span class="fap-home-news-card__filter-label me-1">Loại tin:</span>
+                    <a class="badge bg-primary fap-home-news-card__filter-btn" href="/News">Tất cả</a>
+                        <a class="badge bg-light text-dark border fap-home-news-card__filter-btn" href="/News?CAPNewsTypeId=01a07a13-8e0b-7002-a6a9-7ce20a40ab08">Thông báo tài chính</a>
+                        <a class="badge bg-light text-dark border fap-home-news-card__filter-btn" href="/News?CAPNewsTypeId=01a07a13-8e0b-7000-ad8b-5ba620c6e91e">Thông tin chung</a>
+                        <a class="badge bg-light text-dark border fap-home-news-card__filter-btn" href="/News?CAPNewsTypeId=01a0eb6b-e6cb-74c4-828a-706f371cbbc2">Thông tin Đào tạo</a>
+                        <a class="badge bg-light text-dark border fap-home-news-card__filter-btn" href="/News?CAPNewsTypeId=01a0d1a7-5d2c-7c89-91e7-3bf096c4e782">Thông tin Khảo Thí</a>
+                </div>
+            </div>
+        <div class="card-body p-0">
+                <div class="fap-home-news-list">
+                        <a class="fap-home-news-item" href="/News/Detail/01a19d16-7dae-7b7e-adbb-3a86d4b7b3bf">
+                            <span class="fap-home-news-item__icon ">
+                                <i class="ri-article-line"></i>
+                            </span>
+                            <span class="fap-home-news-item__body">
+                                <span class="fap-home-news-item__title">Thông báo lịch thi kết thúc học phần lần 1, lần 2 các môn học Block 1-4 học kỳ Fall 2026</span>
+                                <span class="fap-home-news-item__meta">
+                                        <span><i class="ri-folder-2-line"></i>Thông tin Khảo Thí</span>
+                                    <span><i class="ri-calendar-line"></i>02/11/2026 23:27</span>
+                                </span>
+                            </span>
+                            <i class="ri-arrow-right-s-line fap-home-news-item__arrow align-self-center"></i>
+                        </a>
+                        <a class="fap-home-news-item" href="/News/Detail/01a19b13-939d-7dd8-9414-bca262bc4bc2">
+                            <span class="fap-home-news-item__icon ">
+                                <i class="ri-article-line"></i>
+                            </span>
+                            <span class="fap-home-news-item__body">
+                                <span class="fap-home-news-item__title">Thông báo danh sách thi kết thúc học phần lần 2 võ 1 VOV114 half 1 ngày 04/11/2026</span>
+                                <span class="fap-home-news-item__meta">
+                                        <span><i class="ri-folder-2-line"></i>Thông tin Khảo Thí</span>
+                                    <span><i class="ri-calendar-line"></i>02/11/2026 14:05</span>
+                                </span>
+                            </span>
+                            <i class="ri-arrow-right-s-line fap-home-news-item__arrow align-self-center"></i>
+                        </a>
+                        <a class="fap-home-news-item" href="/News/Detail/01a19b11-3f80-7091-9edb-b982747018a5">
+                            <span class="fap-home-news-item__icon ">
+                                <i class="ri-article-line"></i>
+                            </span>
+                            <span class="fap-home-news-item__body">
+                                <span class="fap-home-news-item__title">Thông báo điểm thi giữa kỳ môn KRG301 học kỳ Fall 2026</span>
+                                <span class="fap-home-news-item__meta">
+                                        <span><i class="ri-folder-2-line"></i>Thông tin Khảo Thí</span>
+                                    <span><i class="ri-calendar-line"></i>02/11/2026 14:02</span>
+                                </span>
+                            </span>
+                            <i class="ri-arrow-right-s-line fap-home-news-item__arrow align-self-center"></i>
+                        </a>
+                        <a class="fap-home-news-item" href="/News/Detail/01a190ce-93c8-730e-9552-c41778f789f7">
+                            <span class="fap-home-news-item__icon ">
+                                <i class="ri-article-line"></i>
+                            </span>
+                            <span class="fap-home-news-item__body">
+                                <span class="fap-home-news-item__title">Thông báo điểm thi giữa kỳ KOR411, KRL402﻿, điểm thi kết thúc học phần lần 1 võ 1 VOV114, điểm thi kết thúc học phần lần 2 võ 2,3 VOV124, VOV134 half 1 học kỳ Fall 2026</span>
+                                <span class="fap-home-news-item__meta">
+                                        <span><i class="ri-folder-2-line"></i>Thông tin Khảo Thí</span>
+                                    <span><i class="ri-calendar-line"></i>31/10/2026 14:13</span>
+                                </span>
+                            </span>
+                            <i class="ri-arrow-right-s-line fap-home-news-item__arrow align-self-center"></i>
+                        </a>
+                        <a class="fap-home-news-item" href="/News/Detail/01a187db-a7c9-769c-b89b-6b40ea1e6555">
+                            <span class="fap-home-news-item__icon ">
+                                <i class="ri-article-line"></i>
+                            </span>
+                            <span class="fap-home-news-item__body">
+                                <span class="fap-home-news-item__title">Thông báo điểm thi kết thúc học phần lần 2 các môn kết thúc sớm, các môn tiếng anh chuẩn bị half 1 học kỳ Fall 2026</span>
+                                <span class="fap-home-news-item__meta">
+                                        <span><i class="ri-folder-2-line"></i>Thông tin Khảo Thí</span>
+                                    <span><i class="ri-calendar-line"></i>29/10/2026 20:31</span>
+                                </span>
+                            </span>
+                            <i class="ri-arrow-right-s-line fap-home-news-item__arrow align-self-center"></i>
+                        </a>
+                        <a class="fap-home-news-item" href="/News/Detail/01a1830e-f4c6-73f3-bab3-a179718f6bbd">
+                            <span class="fap-home-news-item__icon ">
+                                <i class="ri-article-line"></i>
+                            </span>
+                            <span class="fap-home-news-item__body">
+                                <span class="fap-home-news-item__title">Thông báo lịch thi giữa kỳ học phần KRG301, KRL402 học kỳ Fall 2026</span>
+                                <span class="fap-home-news-item__meta">
+                                        <span><i class="ri-folder-2-line"></i>Thông tin Khảo Thí</span>
+                                    <span><i class="ri-calendar-line"></i>28/10/2026 22:09</span>
+                                </span>
+                            </span>
+                            <i class="ri-arrow-right-s-line fap-home-news-item__arrow align-self-center"></i>
+                        </a>
+                        <a class="fap-home-news-item" href="/News/Detail/01a18141-0b7a-7324-8602-628a7550eb9a">
+                            <span class="fap-home-news-item__icon ">
+                                <i class="ri-article-line"></i>
+                            </span>
+                            <span class="fap-home-news-item__body">
+                                <span class="fap-home-news-item__title">Thông báo danh sách thi kết thúc học phần lần 2 ngày 29/10/2026</span>
+                                <span class="fap-home-news-item__meta">
+                                        <span><i class="ri-folder-2-line"></i>Thông tin Khảo Thí</span>
+                                    <span><i class="ri-calendar-line"></i>28/10/2026 13:44</span>
+                                </span>
+                            </span>
+                            <i class="ri-arrow-right-s-line fap-home-news-item__arrow align-self-center"></i>
+                        </a>
+                        <a class="fap-home-news-item" href="/News/Detail/01a180c3-98b3-71d2-9728-a410a970a343">
+                            <span class="fap-home-news-item__icon ">
+                                <i class="ri-article-line"></i>
+                            </span>
+                            <span class="fap-home-news-item__body">
+                                <span class="fap-home-news-item__title">V/v: Cập nhật mã môn các mức tiếng anh chuẩn bị từ Half 2 – Học kỳ Fall 2026</span>
+                                <span class="fap-home-news-item__meta">
+                                        <span><i class="ri-folder-2-line"></i>Thông tin Đào tạo</span>
+                                    <span><i class="ri-calendar-line"></i>28/10/2026 11:27</span>
+                                </span>
+                            </span>
+                            <i class="ri-arrow-right-s-line fap-home-news-item__arrow align-self-center"></i>
+                        </a>
+                        <a class="fap-home-news-item" href="/News/Detail/01a17c04-4a9d-794d-852f-6973381acb15">
+                            <span class="fap-home-news-item__icon ">
+                                <i class="ri-article-line"></i>
+                            </span>
+                            <span class="fap-home-news-item__body">
+                                <span class="fap-home-news-item__title">Thông báo điểm thi kết thúc học phần lần 1, 2 các môn kết thúc sớm, điểm thi lần 1 các môn tiếng anh chuẩn bị half 1 học kỳ Fall 2026</span>
+                                <span class="fap-home-news-item__meta">
+                                        <span><i class="ri-folder-2-line"></i>Thông tin Khảo Thí</span>
+                                    <span><i class="ri-calendar-line"></i>27/10/2026 13:20</span>
+                                </span>
+                            </span>
+                            <i class="ri-arrow-right-s-line fap-home-news-item__arrow align-self-center"></i>
+                        </a>
+                        <a class="fap-home-news-item" href="/News/Detail/01a17bf9-a6b9-777c-850a-dbc203ab08e6">
+                            <span class="fap-home-news-item__icon ">
+                                <i class="ri-article-line"></i>
+                            </span>
+                            <span class="fap-home-news-item__body">
+                                <span class="fap-home-news-item__title">Thông báo danh sách thi kết thúc học phần lần 2 ngày 28/10/2026</span>
+                                <span class="fap-home-news-item__meta">
+                                        <span><i class="ri-folder-2-line"></i>Thông tin Khảo Thí</span>
+                                    <span><i class="ri-calendar-line"></i>27/10/2026 13:08</span>
+                                </span>
+                            </span>
+                            <i class="ri-arrow-right-s-line fap-home-news-item__arrow align-self-center"></i>
+                        </a>
+                </div>
+        </div>
+    </div>
+</div>
+            </div>
+            <div class="col-lg-4">
+                
+<aside class="fap-home-quick-menu" aria-labelledby="homeQuickMenuTitle">
+    <div class="fap-home-quick-menu__accent" aria-hidden="true"></div>
+    <div class="fap-home-quick-menu__header">
+        <span class="fap-home-quick-menu__icon" aria-hidden="true">
+            <i class="ri-apps-2-fill"></i>
+        </span>
+        <div class="fap-home-quick-menu__heading">
+            <h4 class="fap-home-quick-menu__title" id="homeQuickMenuTitle">
+                Menu nhanh
+            </h4>
+            <p class="fap-home-quick-menu__subtitle">Truy cập nhanh các chức năng thường dùng</p>
+        </div>
+    </div>
+
+    <nav class="fap-home-quick-menu__nav" aria-label="Menu nhanh">
+            <div class="fap-home-quick-menu__group">
+                <span class="fap-home-quick-menu__group-label">Học tập</span>
+            </div>
+            <a class="fap-home-quick-menu__link" href="/WeeklyTimetable">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Thời khóa biểu</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/ExamSchedule">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Lịch thi</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/Report/Attendance">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Báo cáo điểm danh</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/Report/Grade">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Báo cáo điểm</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/Report/Transcript">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Bảng điểm</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/Report/OjtConditions">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Điều kiện OJT</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/Report/ThesisConditions">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Điều kiện KLTN</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/Subject">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Môn học</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/Curriculum">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Khung chương trình</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/MyCertificates">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-award-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Chứng chỉ</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/News">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Tin tức</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/Document">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Tài liệu</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/Document/DrivePdf">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Hướng dẫn sử dụng</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <div class="fap-home-quick-menu__group">
+                <span class="fap-home-quick-menu__group-label">Đơn từ</span>
+            </div>
+            <a class="fap-home-quick-menu__link" href="/Application">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-file-list-3-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Xem đơn</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/Application/Catalog">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-file-edit-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Gửi đơn</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/CrossClassChange">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-exchange-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Đơn đổi lớp chéo</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/StartupGroup">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Danh sách đơn khởi nghiệp</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/StartupGroup/Add">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Gửi đơn khởi nghiệp</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <div class="fap-home-quick-menu__group">
+                <span class="fap-home-quick-menu__group-label">Tài chính</span>
+            </div>
+            <a class="fap-home-quick-menu__link" href="/ShoppingCart">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Thanh toán các khoản phí</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/CoursePendingPayment">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Phí xếp lớp</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/Transaction">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Lịch sử giao dịch</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <div class="fap-home-quick-menu__group">
+                <span class="fap-home-quick-menu__group-label">Wishlist</span>
+            </div>
+            <a class="fap-home-quick-menu__link" href="/Wishlist">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Danh sách chờ lớp</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/Wishlist/Register">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Đăng ký wishlist</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <div class="fap-home-quick-menu__group">
+                <span class="fap-home-quick-menu__group-label">Hoạt động sinh viên</span>
+            </div>
+            <a class="fap-home-quick-menu__link" href="/FyeCheckInLog">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Check-in Log</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/FyeMentorFeedback">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-menu-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Feedback Mentor</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <div class="fap-home-quick-menu__group">
+                <span class="fap-home-quick-menu__group-label">Tài khoản</span>
+            </div>
+            <a class="fap-home-quick-menu__link" href="/Account">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-user-star-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Thông tin cá nhân</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+            <a class="fap-home-quick-menu__link" href="/StudentProfile">
+                <span class="fap-home-quick-menu__link-icon" aria-hidden="true">
+                        <i class="ri-edit-box-line"></i>
+                </span>
+                <span class="fap-home-quick-menu__link-text">Cập nhật hồ sơ</span>
+                <i class="ri-arrow-right-s-line fap-home-quick-menu__chevron" aria-hidden="true"></i>
+            </a>
+    </nav>
+</aside>
+
+
+            </div>
+        </div>
+        <div data-home-slot="extras" data-load-payment="0" data-has-pinned="0">
+</div>
+    </div>
+
+<form id="js-home-resume-pending-form" method="post" class="d-none" action="/ShoppingCart/ResumePendingPayment">
+    
+<input name="__RequestVerificationToken" type="hidden" value="CfDJ8IPsJUoLRnlMl9hToTu1vBw8Tlfw7FEI1ghR7Ph8M1w0iiUsSZUhVxlY6JCBBxwtjUDwlefviI0lRjifp_QF7K1Ei3Cr5lWBVOaAhCnuMc9gas0iQNAjvBg-STUzyhSI6vQkRYxDKwt5Pks7O3kKgyeE-IXsf4s-aKKn0ffbcgSx2tgw4mHS648N56rmibJPOA"></form>
+
+<div id="paymentI18n" class="d-none" data-use-balance-label="Dùng số dư" data-wallet-held-label="Tiền đang giữ (chờ DNG):" data-final-amount="Số tiền cuối cùng" data-invoice-created-message="Đơn thanh toán đã được tạo thành công." data-scan-bank-app="Quét mã để thanh toán bằng ứng dụng ngân hàng" data-bank-transfer-message="Vui lòng chuyển khoản theo thông tin tài khoản bên dưới." data-redirect-ctl-pay="Chuyển đến CTL Pay" data-pay-with-ctl-pay="Thanh toán bằng CTL Pay" data-amount="Số tiền" data-account="Tài khoản" data-account-name="Tên tài khoản" data-bank="Ngân hàng" data-default-bank-name="VietinBank - Ngân hàng Công Thương Việt Nam" data-qr-code-vietinbank="Mã QR VietinBank" data-bank-transfer="Chuyển khoản" data-or="HOẶC" data-ctl-pay="CTL Pay" data-invoice-created-title="Tạo đơn thành công" data-close="Đóng" data-payment-invoice-title="Hóa đơn thanh toán" data-create-invoice-confirm="Bạn có chắc muốn tạo đơn thanh toán không?" data-important="Lưu ý" data-create-invoice-warning="Đơn thanh toán sẽ được tạo cho số tiền này." data-latest-payment-info-warning="Vui lòng dùng thông tin thanh toán mới nhất hiển thị sau khi tạo hóa đơn." data-new-qr-warning="Mã QR VietinBank mới sẽ được tạo cho đơn này." data-old-qr-invalid-warning="Mọi mã QR đã tạo trước đó sẽ không còn hiệu lực." data-old-qr-held-warning="Nếu bạn chuyển khoản bằng mã QR cũ, khoản thanh toán có thể bị ngân hàng treo tối đa &lt;b&gt;3 ngày làm việc&lt;/b&gt;." data-bank-transfer-warning="Thông tin chuyển khoản sẽ được hiển thị cho đơn này." data-old-bank-transfer-warning="Không dùng lại thông tin chuyển khoản cũ vì tài khoản hoặc số tiền có thể thay đổi." data-yes="Có" data-no="Không" data-processing="Đang xử lý..." data-create-payment-invoice="Tạo đơn thanh toán học phí" data-processing-error="Có lỗi xảy ra trong quá trình xử lý." data-confirm-payment-title="Xác nhận thanh toán" data-confirm-ctl-pay="Bạn có chắc muốn thanh toán bằng CTL Pay không?" data-cancel="Hủy" data-loading="Đang tải..." data-cannot-get-ctl-pay="Không lấy được liên kết CTL Pay" data-foxpay-api-error="Lỗi API CTL Pay" data-confirm-qr-title="Xác nhận thanh toán QR" data-confirm-qr-payment="Bạn có chắc muốn tạo mã QR thanh toán không?" data-confirm-bank-transfer-title="Xác nhận chuyển khoản" data-confirm-bank-transfer-payment="Bạn có chắc muốn làm mới thông tin chuyển khoản không?" data-cannot-get-qr="Không lấy được mã QR" data-qr-api-error="Lỗi API QR" data-continue-to-shopping-cart="Tiếp tục thanh toán DNG" data-shopping-cart-url="/ShoppingCart">
+</div>
+
+
+                </div>
+                <!-- container -->
+
+            </div>
+            <!-- content -->
+            <!-- Footer Start -->
+            <footer class="footer">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <span class="list-inline-item">
+                                Bản quyền © 2026
+                                <a href="." class="link-secondary">CAP - Trường đại học CTL</a>. Đã đăng ký bản quyền.
+                            </span>
+                            
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-md-end footer-links d-none d-md-block">
+                                <span class="list-inline-item">
+                                <span class="text-secondary">Phiên bản: 1.0.0.0</span>
+                            </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+            <!-- end Footer -->
+
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- End Page content -->
+        <!-- ============================================================== -->
+
+    </div>
+    <!-- END wrapper -->
+    <div class="modal fade" id="addUpdateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Loading</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center py-4">
+                    <span class="spinner-border text-primary" aria-hidden="true"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div id="web-notification-config" class="d-none" data-is-authenticated="True" data-user-id="01a0dfa7-62af-759e-961f-12f393767762" data-prompt-after-login="True" data-login-registration-id="c7262251eba04a33a20c1c79d47da414" data-sync-url="/Notification/SyncWebDevice" data-request-verification-token="CfDJ8IPsJUoLRnlMl9hToTu1vBw8Tlfw7FEI1ghR7Ph8M1w0iiUsSZUhVxlY6JCBBxwtjUDwlefviI0lRjifp_QF7K1Ei3Cr5lWBVOaAhCnuMc9gas0iQNAjvBg-STUzyhSI6vQkRYxDKwt5Pks7O3kKgyeE-IXsf4s-aKKn0ffbcgSx2tgw4mHS648N56rmibJPOA" data-ask-permission-title="Cho phép nhận thông báo" data-ask-permission="Bạn có muốn bật thông báo đẩy để nhận thông tin học tập mới nhất không?" data-permission-granted="Đã cho phép thông báo" data-permission-denied="Đã chặn thông báo" data-permission-default="Chưa chọn quyền thông báo" data-permission-unsupported="Trình duyệt không hỗ trợ thông báo" data-notification-default-title="Thông báo mới" data-notification-just-now="Vừa xong" data-token-unavailable="Đã cấp quyền nhưng chưa lấy được mã thiết bị nhận push. Vui lòng tải lại trang và thử lại." data-debug-log-enabled="False" data-firebase-web-enabled="True" data-firebase-api-key="AIzaSyBwA2RbTGIpjRLB9WiF6ZGAWihDBSU3d3c" data-firebase-auth-domain="fuct-76c8b.firebaseapp.com" data-firebase-project-id="fuct-76c8b" data-firebase-storage-bucket="fuct-76c8b.appspot.com" data-firebase-messaging-sender-id="21537143108" data-firebase-app-id="1:21537143108:web:0815656478e1e55db43f11" data-firebase-measurement-id="G-QWVS0WFYHQ" data-firebase-vapid-key="BODdVLwPa0LmfMjZMIhLW0ERQ_Gh9Xv_t1ZpJkWLHO8W-hVS4zUWJpEFbgzxZt98WP1w_wHCw5SM7vyvhdFfywU" data-firebase-service-worker-path="/firebase-messaging-sw.js">
+    </div>
+   
+        
+    <!-- Core JS at end of body: parse HTML/CSS first; order kept for jQuery plugins -->
+    <script src="./assets/vendor/jidox/vendor.min.js?v=pE5cLORtU80Ttpd1IgjN6PaO6DY8HJ_mqUpKkC3fhEk"></script>
+    <script src="./assets/vendor/flatpickr/flatpickr.min.js?v=Huqxy3eUcaCwqqk92RwusapTfWlvAasF6p2rxV6FJaE"></script>
+    <script src="./assets/vendor/flatpickr/l10n/vn.js?v=0Nx1JjwPrTqvu7uGuE1ZsZtowl96PYRTwUZBF4-Jo5o"></script>
+    <script src="./assets/vendor/jquery-toast-plugin/jquery.toast.min.js?v=56zsTlMwzGRtLC4t51alLh5cKYvi0hnbhEXQTVU_zZQ"></script>
+    <script src="./assets/vendor/jidox/js/app.min.js?v=BIJbXOxCPUvXa4Bmw48I0WaZQfxZA27Sv-NOImdZBnI"></script>
+    <script src="./js/app-toast.js?v=gvbmQm4sdn6O_zDNOCceGD7uQGmygr3lBIbaJn-v_wY"></script>
+    <script src="./js/base.js?v=UHlindLb2GSDJUoou-BgAjl_yjtVBfPoL4zkydiqaSo"></script>
+    <script src="./js/fap-table-cards.js?v=fZccAWmFCNunU6pzKDZ66TnHhBbEEC9-BWQC6QSVGzw"></script>
+    <script src="./js/sidebar-state.js?v=AgcZ49v-MavScRi2Pggh13aE4NLzTFQWU_OsHkw9t_U"></script>
+    <script src="./js/pages/head-department-filter.js?v=tplo-5H6PvOVeHTYV9ocRgsDfoLD1L0d8vYpAkw2G2U"></script>
+        <script src="./js/lazy-firebase-loader.js?v=hoaaAA23GqjSku_mzcDu02mnktGgyamVEYD27AGLtMg" defer=""></script>
+        <script src="./js/fap-notification-payload.js?v=eLg4VrGRJ5PPiHHTVJGhkxbnzu_Lc0Dy7O0CZuiYql8" defer=""></script>
+        <script src="./js/web-notification-device.js?v=xMSk1S7qATX2qzgsEm-sjcIYg714Xx93DDUR-yu6KGA" defer=""></script>
+        <script src="./js/notification-bell.js?v=AY0k-4Nruxb_HLHr0aGzQjztpKE5fB1YQ70BOiFZTsE" defer=""></script>
+
+    
+        <script src="./js/pages/home-student-content.js?v=rl5T1e-T_f1q6_Ieaf5wvUIYvfwLBghoQdvl76iY3a8"></script>
+
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon="{&quot;version&quot;:&quot;2024.11.0&quot;,&quot;token&quot;:&quot;56c6dd7e4ecf4947aa540f48289e45af&quot;,&quot;spa&quot;:2}" crossorigin="anonymous"></script>
+
+
+</body></html>

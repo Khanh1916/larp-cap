@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 76" fill="none" width="340" height="76">
+  <defs>
+    <!-- Royal Violet & Amethyst Gradients -->
+    <linearGradient id="shield_rim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc" />
+      <stop offset="35%" stop-color="#a855f7" />
+      <stop offset="70%" stop-color="#7c3aed" />
+      <stop offset="100%" stop-color="#4c1d95" />
+    </linearGradient>
+
+    <linearGradient id="ribbon_c" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e9d5ff" />
+      <stop offset="50%" stop-color="#c084fc" />
+      <stop offset="100%" stop-color="#a855f7" />
+    </linearGradient>
+
+    <linearGradient id="ribbon_t" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="40%" stop-color="#d8b4fe" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+
+    <linearGradient id="ribbon_l" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#6d28d9" />
+    </linearGradient>
+
+    <linearGradient id="text_ctl" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="40%" stop-color="#f3e8ff" />
+      <stop offset="100%" stop-color="#c084fc" />
+    </linearGradient>
+
+    <linearGradient id="badge_bg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="rgba(124, 58, 237, 0.25)" />
+      <stop offset="100%" stop-color="rgba(168, 85, 247, 0.15)" />
+    </linearGradient>
+
+    <!-- Ambient Glow Filter -->
+    <filter id="core_glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <filter id="star_glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- ==================== EMBLEM (SHIELD OF WISDOM & TECH) ==================== -->
+  <g transform="translate(6, 6)">
+    <!-- Outer Shield Ambient Aura -->
+    <path d="M32 3 C48 3 58 10 58 24 C58 43 43 54 32 60 C21 54 6 43 6 24 C6 10 16 3 32 3 Z"
+          fill="none" stroke="url(#shield_rim)" stroke-width="2.5" filter="url(#core_glow)" opacity="0.65" />
+
+    <!-- Solid Shield Background -->
+    <path d="M32 4.5 C46.5 4.5 56 11 56 24 C56 41.5 42 52 32 57.5 C22 52 8 41.5 8 24 C8 11 17.5 4.5 32 4.5 Z"
+          fill="#130e26" stroke="url(#shield_rim)" stroke-width="1.8" />
+
+    <!-- Shield Inner Bevel Facet -->
+    <path d="M32 6 L53 23 C53 38 41 48 32 53.5 L32 6 Z" fill="rgba(255, 255, 255, 0.05)" />
+
+    <!-- Open Book / Wings of Wisdom at Base -->
+    <path d="M16 41 C21 38 27 38.5 32 42.5 C37 38.5 43 38 48 41 C43 45 37 44.5 32 47.5 C27 44.5 21 45 16 41 Z"
+          fill="url(#ribbon_c)" opacity="0.9" />
+
+    <!-- ================= MONOGRAM "CTL" ================= -->
+    <!-- Letter 'C' -->
+    <path d="M26 21 C19 21 16 26 16 31 C16 36.5 20 40 25 40 C27 40 28.5 39.2 29.5 38.2"
+          stroke="url(#ribbon_c)" stroke-width="3.2" stroke-linecap="round" fill="none" />
+
+    <!-- Letter 'T' -->
+    <path d="M23 18.5 L41 18.5"
+          stroke="url(#ribbon_t)" stroke-width="3" stroke-linecap="round" fill="none" />
+    <path d="M32 18.5 L32 37.5"
+          stroke="url(#ribbon_t)" stroke-width="3.4" stroke-linecap="round" fill="none" />
+
+    <!-- Letter 'L' -->
+    <path d="M32 30.5 L32 37.5 C32 39 33 40 34.5 40 L44 40"
+          stroke="url(#ribbon_l)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+
+    <!-- Diamond Star of Excellence (Top Center) -->
+    <polygon points="32,9 33.8,13.5 38,15.5 33.8,17.5 32,22 30.2,17.5 26,15.5 30.2,13.5"
+             fill="#e9d5ff" filter="url(#star_glow)" />
+    <circle cx="32" cy="15.5" r="1.5" fill="#ffffff" />
+  </g>
+
+  <!-- ==================== TYPOGRAPHY & BRAND TEXT ==================== -->
+  <!-- Brand Wordmark "CTL" -->
+  <text x="78" y="36" font-family="'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+        font-size="30" font-weight="900" letter-spacing="1.5" fill="url(#text_ctl)">
+    CTL
+  </text>
+
+  <!-- Wordmark "UNIVERSITY" -->
+  <text x="146" y="36" font-family="'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+        font-size="22" font-weight="500" letter-spacing="3" fill="#e2e8f0">
+    UNIVERSITY
+  </text>
+
+  <!-- Subtitle Pill / Badge: "ACADEMIC PORTAL" -->
+  <rect x="78" y="46" width="156" height="18" rx="5" fill="url(#badge_bg)" stroke="rgba(168, 85, 247, 0.4)" stroke-width="0.8" />
+  <circle cx="88" cy="55" r="2.5" fill="#c084fc" filter="url(#star_glow)" />
+  <text x="96" y="58.5" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif"
+        font-size="9.5" font-weight="700" letter-spacing="2" fill="#d8b4fe">
+    ACADEMIC PORTAL
+  </text>
+
+  <!-- Motto Divider & Text -->
+  <text x="244" y="58" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif"
+        font-size="9" font-weight="600" letter-spacing="1.5" fill="#a78bfa">
+    • EST. 2026
+  </text>
+</svg>

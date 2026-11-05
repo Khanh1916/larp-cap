@@ -92,7 +92,11 @@ function semesterParam(req) {
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use('/css', express.static(path.join(__dirname, 'css')));
 app.use('/js', express.static(path.join(__dirname, 'js')));
-app.use('/favicon.ico', express.static(path.join(__dirname, 'favicon.ico')));
+// Browsers request /favicon.ico automatically; serve the CTL square logo.
+app.get('/favicon.ico', (req, res) => {
+  res.type('image/svg+xml').set('Cache-Control', 'public, max-age=86400')
+    .sendFile(path.join(__dirname, 'assets', 'images', 'logo-ctl.svg'));
+});
 
 // Multi-language Middleware (vi / en)
 app.use((req, res, next) => {
@@ -415,6 +419,7 @@ app.get('/', (req, res) => {
     .replace(/lamctct193667@ctl\.edu\.vn/g, () => esc(student.email))
     .replace(/BIT_IA_19A_AS/g, () => esc(student.program_code))
     .replace(/1\.500\.000/g, () => balanceStr)
+    .replace(/(fap-home-student-card__wallet-amount">\s*)0(\s*<span)/, (m, a, b) => `${a}${balanceStr}${b}`)
     .replace(/>CTL</g, () => `>${esc(avatar)}<`);
 
   // Translate to English if requested
@@ -627,6 +632,9 @@ app.get('/CoursePendingPayment', (req, res) => {
   const content = renderCoursePendingPayment(safe({ student, pendingCourses: [], currentSemester: semester, lang: req.lang }));
   renderPage(res, req, { title: req.lang === 'en' ? 'Course Placement Fee' : 'Phí xếp lớp', currentPath: '/CoursePendingPayment', content, student });
 });
+
+// Old link kept by notifications in existing databases.
+app.get('/Payment/Transactions', (req, res) => res.redirect(301, '/Transaction'));
 
 app.all('/ShoppingCart/ResumePendingPayment', (req, res) => {
   res.redirect('/CoursePendingPayment');

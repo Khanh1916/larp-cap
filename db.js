@@ -2,7 +2,9 @@ const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
 const { hashPassword, isHashed } = require('./security');
 
-const dbPath = path.join(__dirname, 'cap.db');
+// The database file is created and seeded automatically on first start.
+// CAP_DB_PATH lets tests (or a persistent disk on the host) point it elsewhere.
+const dbPath = process.env.CAP_DB_PATH || path.join(__dirname, 'cap.db');
 const db = new DatabaseSync(dbPath);
 
 db.exec('PRAGMA journal_mode = WAL;');
@@ -652,7 +654,7 @@ function seedAll() {
 
   // SE180123 Notifications
   insertNotif.run('SE180123', 'Thông báo tiếp nhận OJT', 'Bạn đã được CTL Software duyệt tiếp nhận thực tập vị trí Fullstack Web Developer.', '/Report/OjtConditions', 0, '2026-11-01 09:00:00');
-  insertNotif.run('SE180123', 'Học phí OJT', 'Đã hoàn tất quyết toán kinh phí thực tập doanh nghiệp kỳ Fall 2026.', '/Payment/Transactions', 1, '2026-10-28 14:00:00');
+  insertNotif.run('SE180123', 'Học phí OJT', 'Đã hoàn tất quyết toán kinh phí thực tập doanh nghiệp kỳ Fall 2026.', '/Transaction', 1, '2026-10-28 14:00:00');
 
   // 13. Applications
   const insertApp = db.prepare(`

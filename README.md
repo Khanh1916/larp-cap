@@ -4,7 +4,7 @@ Dự án mô phỏng và tái tạo (reverse engineering & full-stack clone) to�
 
 ---
 
-## 1. Bản sắc Thương hiệu & Hệ màu Chủ đạo (CTL University Theme)
+## Bản sắc Thương hiệu & Hệ màu Chủ đạo (CTL University Theme)
 
 Hệ thống được chuyển đổi sang bộ nhận diện thương hiệu học thuật hiện đại **CTL Cyber Sapphire & Aurora Cyan**:
 
@@ -29,8 +29,10 @@ Hệ thống được chuyển đổi sang bộ nhận diện thương hiệu h�
 ```
 f:\larp-cap\
 ├── server.js              # Server Backend Express & Định tuyến 27+ Routes
-├── db.js                  # Cơ sở dữ liệu SQLite (node:sqlite) & Logic nghiệp vụ
-├── cap.db                 # Database SQLite cục bộ (20+ bảng quan hệ)
+├── security.js            # Escape HTML, băm mật khẩu, chống CSRF/open redirect, header bảo mật
+├── db.js                  # Cơ sở dữ liệu SQLite (node:sqlite), dữ liệu mẫu & Logic nghiệp vụ
+├── cap.db                 # Database SQLite cục bộ — tự tạo khi chạy lần đầu, không commit
+├── i18n.js                # Từ điển song ngữ vi / en
 ├── index.html             # Trang chủ CAP Dashboard
 ├── views/
 │   ├── layout.js          # Khung giao diện dùng chung (Topbar, Sidebar, Theme, Notification)
@@ -48,7 +50,8 @@ f:\larp-cap\
 ├── assets/                # Giao diện vendor (Jidox, Bootstrap 5, RemixIcon, Flatpickr)
 ├── css/                   # Stylesheet tùy biến của CAP
 ├── js/                    # Các module nghiệp vụ frontend
-└── scripts/               # JavaScript modules bóc tách qua REA
+├── tests/                 # Bộ test tự động (node:test), chạy bằng `npm test`
+└── .github/workflows/     # CI: chạy test trên mỗi lần push / pull request
 ```
 
 ---
@@ -164,11 +167,30 @@ npm start
 
 Truy cập trình duyệt: **`http://localhost:3000/`** (Tự động chuyển hướng tới `/Auth/Login` nếu chưa đăng nhập).
 
+Chế độ phát triển (tự khởi động lại khi sửa code):
+```bash
+npm run dev
+```
+
+Database `cap.db` **không** nằm trong git: lần chạy đầu tiên server tự tạo file và nạp dữ liệu mẫu.
+Muốn làm lại dữ liệu từ đầu, chỉ cần xóa `cap.db` rồi chạy lại server.
+
 Kiểm thử tự động:
 ```bash
-node test_auth_and_semesters.js  # Đăng nhập, đa học kỳ & kiểm thử bảo mật (34 test case)
-node audit_links.js               # 41/41 routes liên kết nội bộ đạt 100%
+npm test
 ```
+
+Bộ test (`tests/`) tự bật server trên cổng trống với một database tạm, nên **không** đụng tới `cap.db` của bạn:
+
+| File | Nội dung |
+|---|---|
+| `auth-and-semesters.test.js` | Đăng nhập, đa học kỳ, bảng điểm, chuyển ngôn ngữ, đăng xuất |
+| `security.test.js` | Cookie giả mạo, XSS, CSRF, open redirect, giới hạn nạp tiền, thanh toán trùng, khóa đăng nhập |
+| `forms.test.js` | Lưu đơn từ / wishlist / hồ sơ, kiểm tra dữ liệu đầu vào |
+| `pages.test.js` | Mọi trang hiển thị đúng ở cả vi/en, mọi liên kết nội bộ và file tĩnh đều tồn tại |
+| `production.test.js` | Chế độ `NODE_ENV=production`: tắt đăng nhập demo, cookie `Secure` |
+
+> **Lưu ý khi deploy lên Render (gói free):** ổ đĩa không được giữ lại, nên dữ liệu người dùng nhập sẽ mất mỗi lần deploy hoặc khi server khởi động lại sau thời gian ngủ — database được nạp lại từ dữ liệu mẫu. Muốn giữ dữ liệu, gắn persistent disk rồi đặt `CAP_DB_PATH` trỏ vào đó, hoặc chuyển sang một database bên ngoài.
 
 ---
 
@@ -181,6 +203,7 @@ Biến môi trường (xem `.env.example`):
 | `NODE_ENV` | `production` bật cookie `Secure`, HSTS và **tắt** các lối tắt demo |
 | `SESSION_SECRET` | Chuỗi bí mật dùng để ký cookie phiên (bắt buộc khi chạy production) |
 | `DEMO_LOGIN` | `true` để bật lại đăng nhập 1-click / chuyển tài khoản kể cả ở production |
+| `CAP_DB_PATH` | Đường dẫn file SQLite (mặc định `./cap.db`), ví dụ trỏ vào persistent disk |
 
 Các cơ chế bảo vệ (`security.js`):
 - Cookie phiên `cap_user` được **ký** (không giả mạo được), `HttpOnly`, `SameSite=Lax`.

@@ -23,3 +23,9 @@ desktop.ini
 # Environment variables
 .env
 .env.local
+
+# Claude Code local (personal) settings
+.claude/settings.local.json
+
+# SQLite database (created and seeded automatically on first start)
+*.db

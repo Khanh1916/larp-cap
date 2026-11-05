@@ -1,0 +1,56 @@
+/* Login page (moved out of an inline <style> block for the CSP). */
+body {
+  background: radial-gradient(circle at 50% 20%, #21153b 0%, #0c0a1a 75%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #f8fafc;
+}
+.login-card {
+  width: 100%;
+  max-width: 460px;
+  border-radius: 16px;
+  background: #15122a;
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 40px rgba(124, 58, 237, 0.2);
+  padding: 2.25rem;
+}
+.brand-logo {
+  height: 52px;
+  display: block;
+  margin: 0 auto 1.5rem auto;
+}
+.btn-ctl-primary {
+  background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+  color: #fff;
+  border: none;
+}
+.btn-ctl-primary:hover {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  color: #fff;
+}
+.account-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+}
+.account-pill:hover {
+  background: rgba(124, 58, 237, 0.18);
+  border-color: #a855f7;
+  color: #fff;
+}
+.badge-soft-primary { background: rgba(124, 58, 237, 0.2); color: #c084fc; }
+.badge-soft-success { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.badge-soft-warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+

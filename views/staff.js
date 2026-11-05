@@ -237,7 +237,7 @@ function renderAttendanceEntry({ cls, sessions = [], today, flash = null, lang =
               <tbody>${sess.rows.map(r => `
                 <tr>
                   <td class="ps-3"><strong class="text-primary">${r.student_roll}</strong> · ${r.full_name}</td>
-                  <td class="text-end pe-3" style="width: 220px;">
+                  <td class="cap-w-220 text-end pe-3">
                     <select name="a_${r.id}" class="form-select form-select-sm" ${sess.locked ? 'disabled' : ''}>
                       ${options.map(([v, t]) => `<option value="${v}" ${r.status === v ? 'selected' : ''}>${t}</option>`).join('')}
                     </select>

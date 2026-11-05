@@ -20,10 +20,10 @@ function renderAttendance({ summary = [], semesters = [], currentSemester = 'Fal
         <td class="text-center fw-bold ${item.absent_slots > 0 ? 'text-danger' : 'text-success'}">${item.absent_slots}</td>
         <td>
           <div class="d-flex align-items-center gap-2">
-            <div class="progress flex-grow-1" style="height: 6px;">
-              <div class="progress-bar ${isFailed ? 'bg-danger' : isWarning ? 'bg-warning' : 'bg-success'}" style="width: ${Math.min(100, item.absent_percentage * 5)}%"></div>
+            <div class="cap-h-6 progress flex-grow-1">
+              <div class="progress-bar ${isFailed ? 'bg-danger' : isWarning ? 'bg-warning' : 'bg-success'}" data-progress="${Math.min(100, item.absent_percentage * 5)}"></div>
             </div>
-            <span class="small fw-semibold" style="width: 45px;">${item.absent_percentage.toFixed(1)}%</span>
+            <span class="cap-w-45 small fw-semibold">${item.absent_percentage.toFixed(1)}%</span>
           </div>
         </td>
         <td class="text-center">${badge}</td>
@@ -62,12 +62,12 @@ function renderAttendance({ summary = [], semesters = [], currentSemester = 'Fal
           <table class="table table-hover table-striped mb-0">
             <thead class="table-light">
               <tr>
-                <th class="text-center" style="width: 60px;">STT</th>
+                <th class="cap-w-60 text-center">STT</th>
                 <th>Mã môn</th>
                 <th>Tên môn</th>
                 <th class="text-center">Tổng số ca</th>
                 <th class="text-center">Số ca vắng</th>
-                <th style="width: 250px;">Tỉ lệ vắng (Tối đa 20%)</th>
+                <th class="cap-w-250">Tỉ lệ vắng (Tối đa 20%)</th>
                 <th class="text-center">Trạng thái</th>
               </tr>
             </thead>

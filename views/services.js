@@ -34,7 +34,7 @@ function renderWishlist({ wishlist, subjects, successMsg = null }) {
               <table class="table table-hover table-striped mb-0">
                 <thead class="table-light">
                   <tr>
-                    <th style="width: 50px;" class="text-center">STT</th>
+                    <th class="cap-w-50 text-center">STT</th>
                     <th>Mã môn</th>
                     <th>Học kỳ</th>
                     <th>Khung giờ mong muốn</th>
@@ -124,7 +124,7 @@ function renderCrossClass({ requests, successMsg = null }) {
               <table class="table table-hover table-striped mb-0">
                 <thead class="table-light">
                   <tr>
-                    <th style="width: 50px;" class="text-center">STT</th>
+                    <th class="cap-w-50 text-center">STT</th>
                     <th>Mã môn</th>
                     <th>Lớp hiện tại</th>
                     <th>Lớp muốn đổi</th>
@@ -276,7 +276,7 @@ function renderFyeLogs({ logs }) {
           <table class="table table-hover table-striped mb-0">
             <thead class="table-light">
               <tr>
-                <th style="width: 50px;" class="text-center">STT</th>
+                <th class="cap-w-50 text-center">STT</th>
                 <th>Tên sự kiện / Hoạt động</th>
                 <th>Địa điểm</th>
                 <th class="text-center">Thời gian Check-in</th>
@@ -398,12 +398,12 @@ function renderDocuments({ documents }) {
           <table class="table table-hover table-striped mb-0">
             <thead class="table-light">
               <tr>
-                <th style="width: 50px;" class="text-center">STT</th>
+                <th class="cap-w-50 text-center">STT</th>
                 <th>Tên tài liệu / Văn bản</th>
                 <th>Danh mục</th>
                 <th class="text-center">Dung lượng</th>
                 <th class="text-center">Ngày ban hành</th>
-                <th class="text-center" style="width: 140px;">Hành động</th>
+                <th class="cap-w-140 text-center">Hành động</th>
               </tr>
             </thead>
             <tbody>

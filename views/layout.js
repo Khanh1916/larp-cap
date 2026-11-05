@@ -4,7 +4,8 @@ const i18n = require('../i18n');
 
 // NOTE: `title` and `student` must already be HTML-escaped by the caller (see renderPage in server.js).
 // staffMenu: sidebar HTML for staff accounts (replaces the student menu and hides wallet/profile items).
-function renderLayout({ title, currentPath = '/', content = '', student, lang = 'vi', demoMode = false, staffMenu = '' }) {
+// notifications: [{ id, title, body, href, created_at, is_read }] (escaped); unreadCount: number.
+function renderLayout({ title, currentPath = '/', content = '', student, lang = 'vi', demoMode = false, staffMenu = '', notifications = [], unreadCount = 0 }) {
   const isStaff = Boolean(staffMenu);
   const dict = i18n.getDictionary(lang);
   const isEn = lang === 'en';
@@ -45,318 +46,12 @@ function renderLayout({ title, currentPath = '/', content = '', student, lang = 
     <link href="/css/style.css" rel="stylesheet">
     <link href="/css/home.css" rel="stylesheet">
     <!-- CTL University Royal Amethyst & Violet Theme -->
-    <style id="ctl-theme-overrides">
-      :root {
-        --ctl-primary: #7c3aed;
-        --ctl-primary-rgb: 124, 58, 237;
-        --ctl-secondary: #a855f7;
-        --ctl-accent: #c084fc;
-        --ct-primary: #7c3aed !important;
-        --ct-primary-rgb: 124, 58, 237 !important;
-      }
-
-      /* ==================== LIGHT THEME ==================== */
-      html[data-bs-theme="light"],
-      body[data-bs-theme="light"],
-      :root:not([data-bs-theme="dark"]) {
-        --ct-body-bg: #f5f4fb !important;
-        --ct-body-color: #1e1b4b !important;
-        --ct-border-color: #e2e0f0 !important;
-        --ct-card-bg: #ffffff !important;
-      }
-      html[data-bs-theme="light"] body,
-      html[data-bs-theme="light"] .content-page,
-      html[data-bs-theme="light"] .wrapper,
-      html[data-bs-theme="light"] .content,
-      html[data-bs-theme="light"] .container-fluid,
-      html[data-bs-theme="light"] .page-title-box {
-        background-color: #f5f4fb !important;
-        color: #1e1b4b !important;
-      }
-      html[data-bs-theme="light"] .card {
-        background-color: #ffffff !important;
-        border: 1px solid rgba(124, 58, 237, 0.12) !important;
-        box-shadow: 0 4px 18px rgba(124, 58, 237, 0.05) !important;
-        color: #1e1b4b !important;
-      }
-      html[data-bs-theme="light"] .card-body {
-        color: #1e1b4b !important;
-      }
-      html[data-bs-theme="light"] .navbar-custom,
-      html[data-bs-theme="light"] .cap-topbar,
-      html[data-bs-theme="light"] .fap-topbar {
-        background-color: #ffffff !important;
-        border-bottom: 1px solid rgba(124, 58, 237, 0.14) !important;
-      }
-      html[data-bs-theme="light"] .leftside-menu,
-      html[data-bs-theme="light"] .cap-sidebar,
-      html[data-bs-theme="light"] .fap-sidebar {
-        background-color: #ffffff !important;
-        border-right: 1px solid rgba(124, 58, 237, 0.14) !important;
-      }
-      html[data-bs-theme="light"] .side-nav-link {
-        color: #475569 !important;
-      }
-      html[data-bs-theme="light"] .side-nav-link:hover {
-        color: #7c3aed !important;
-        background-color: rgba(124, 58, 237, 0.06) !important;
-      }
-      html[data-bs-theme="light"] .side-nav-link.active {
-        color: #7c3aed !important;
-        background-color: rgba(124, 58, 237, 0.12) !important;
-        font-weight: 600;
-      }
-      html[data-bs-theme="light"] .side-nav-title {
-        color: #6d28d9 !important;
-        font-weight: 700;
-      }
-      html[data-bs-theme="light"] .fap-page-title__crumb-current,
-      html[data-bs-theme="light"] .cap-page-title__crumb-current,
-      html[data-bs-theme="light"] .page-title {
-        color: #1e1b4b !important;
-        font-weight: 700 !important;
-      }
-      html[data-bs-theme="light"] .fap-page-title__crumb-link,
-      html[data-bs-theme="light"] .breadcrumb-item a {
-        color: #7c3aed !important;
-      }
-      html[data-bs-theme="light"] .text-muted {
-        color: #64748b !important;
-      }
-      html[data-bs-theme="light"] .footer {
-        background-color: #ffffff !important;
-        border-top: 1px solid rgba(124, 58, 237, 0.1) !important;
-        color: #64748b !important;
-      }
-      html[data-bs-theme="light"] .dropdown-menu {
-        background-color: #ffffff !important;
-        border: 1px solid rgba(124, 58, 237, 0.15) !important;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
-        color: #1e1b4b !important;
-      }
-      html[data-bs-theme="light"] .dropdown-item {
-        color: #334155 !important;
-      }
-      html[data-bs-theme="light"] .dropdown-item:hover {
-        background-color: rgba(124, 58, 237, 0.08) !important;
-        color: #7c3aed !important;
-      }
-
-      /* ==================== DARK THEME ==================== */
-      html[data-bs-theme="dark"],
-      body[data-bs-theme="dark"] {
-        --ct-body-bg: #0c0a1a !important;
-        --ct-body-color: #f8fafc !important;
-        --ct-card-bg: #15122a !important;
-      }
-      html[data-bs-theme="dark"] body,
-      html[data-bs-theme="dark"] .content-page,
-      html[data-bs-theme="dark"] .wrapper,
-      html[data-bs-theme="dark"] .content,
-      html[data-bs-theme="dark"] .container-fluid,
-      html[data-bs-theme="dark"] .page-title-box {
-        background-color: #0c0a1a !important;
-        color: #f8fafc !important;
-      }
-      html[data-bs-theme="dark"] .card {
-        background-color: #15122a !important;
-        border: 1px solid rgba(168, 85, 247, 0.16) !important;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45) !important;
-        color: #f8fafc !important;
-      }
-      html[data-bs-theme="dark"] .card-body {
-        color: #f8fafc !important;
-      }
-      html[data-bs-theme="dark"] .navbar-custom,
-      html[data-bs-theme="dark"] .cap-topbar,
-      html[data-bs-theme="dark"] .fap-topbar {
-        background-color: #110e24 !important;
-        border-bottom: 1px solid rgba(168, 85, 247, 0.18) !important;
-      }
-      html[data-bs-theme="dark"] .leftside-menu,
-      html[data-bs-theme="dark"] .cap-sidebar,
-      html[data-bs-theme="dark"] .fap-sidebar {
-        background-color: #100d22 !important;
-        border-right: 1px solid rgba(168, 85, 247, 0.18) !important;
-      }
-      html[data-bs-theme="dark"] .side-nav-link {
-        color: #94a3b8 !important;
-      }
-      html[data-bs-theme="dark"] .side-nav-link:hover {
-        color: #c084fc !important;
-        background-color: rgba(168, 85, 247, 0.1) !important;
-      }
-      html[data-bs-theme="dark"] .side-nav-link.active {
-        color: #c084fc !important;
-        background: rgba(124, 58, 237, 0.22) !important;
-        font-weight: 600;
-      }
-      html[data-bs-theme="dark"] .side-nav-title {
-        color: #a78bfa !important;
-        font-weight: 700;
-      }
-      html[data-bs-theme="dark"] .fap-page-title__crumb-current,
-      html[data-bs-theme="dark"] .cap-page-title__crumb-current,
-      html[data-bs-theme="dark"] .page-title {
-        color: #ffffff !important;
-        font-weight: 700 !important;
-        text-shadow: 0 0 10px rgba(168, 85, 247, 0.5) !important;
-      }
-      html[data-bs-theme="dark"] .fap-page-title__crumb-link,
-      html[data-bs-theme="dark"] .breadcrumb-item a {
-        color: #c084fc !important;
-      }
-      html[data-bs-theme="dark"] .text-muted {
-        color: #94a3b8 !important;
-      }
-      html[data-bs-theme="dark"] .footer {
-        background-color: #110e24 !important;
-        border-top: 1px solid rgba(168, 85, 247, 0.15) !important;
-        color: #94a3b8 !important;
-      }
-      html[data-bs-theme="dark"] .dropdown-menu {
-        background-color: #171330 !important;
-        border: 1px solid rgba(168, 85, 247, 0.25) !important;
-        color: #f8fafc !important;
-      }
-      html[data-bs-theme="dark"] .dropdown-item {
-        color: #e2e8f0 !important;
-      }
-      html[data-bs-theme="dark"] .dropdown-item:hover {
-        background-color: rgba(168, 85, 247, 0.15) !important;
-        color: #c084fc !important;
-      }
-
-      /* ==================== MULTI-LEVEL COLLAPSIBLE SIDEBAR ==================== */
-      .side-nav-second-level {
-        padding-left: 0 !important;
-        list-style: none;
-        margin: 4px 0 6px 0;
-      }
-      .side-nav-second-level .side-nav-item {
-        margin: 2px 0;
-      }
-      .side-nav-second-level .side-nav-link {
-        display: flex !important;
-        align-items: center !important;
-        gap: 8px;
-        padding: 7px 14px 7px 32px !important;
-        font-size: 13.5px !important;
-        border-radius: 8px !important;
-        transition: all 0.15s ease !important;
-        text-decoration: none !important;
-        border: 1px solid transparent !important;
-      }
-
-      /* Dark mode sub-items */
-      html[data-bs-theme="dark"] .side-nav-second-level .side-nav-link {
-        color: #94a3b8 !important;
-      }
-      html[data-bs-theme="dark"] .side-nav-second-level .side-nav-link:hover {
-        color: #ffffff !important;
-        background: rgba(124, 58, 237, 0.12) !important;
-      }
-      html[data-bs-theme="dark"] .side-nav-second-level .side-nav-link.active,
-      html[data-bs-theme="dark"] .side-nav-second-level .menuitem-active > .side-nav-link {
-        color: #c084fc !important;
-        background: rgba(124, 58, 237, 0.22) !important;
-        border: 1px solid rgba(168, 85, 247, 0.4) !important;
-        font-weight: 600 !important;
-        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2) !important;
-      }
-
-      /* Light mode sub-items */
-      html[data-bs-theme="light"] .side-nav-second-level .side-nav-link {
-        color: #475569 !important;
-      }
-      html[data-bs-theme="light"] .side-nav-second-level .side-nav-link:hover {
-        color: #7c3aed !important;
-        background: rgba(124, 58, 237, 0.06) !important;
-      }
-      html[data-bs-theme="light"] .side-nav-second-level .side-nav-link.active,
-      html[data-bs-theme="light"] .side-nav-second-level .menuitem-active > .side-nav-link {
-        color: #7c3aed !important;
-        background: rgba(124, 58, 237, 0.12) !important;
-        border: 1px solid rgba(124, 58, 237, 0.3) !important;
-        font-weight: 600 !important;
-        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.08) !important;
-      }
-
-      /* Parent active highlight */
-      html[data-bs-theme="dark"] .side-nav-item.menuitem-active > .side-nav-link > i {
-        background: rgba(124, 58, 237, 0.28) !important;
-        color: #c084fc !important;
-        border-radius: 6px;
-      }
-      html[data-bs-theme="light"] .side-nav-item.menuitem-active > .side-nav-link > i {
-        background: rgba(124, 58, 237, 0.12) !important;
-        color: #7c3aed !important;
-        border-radius: 6px;
-      }
-
-      /* ==================== COMMON BRAND ELEMENTS ==================== */
-      .fap-page-title__crumb-current,
-      .cap-page-title__crumb-current {
-        font-size: 1.15rem !important;
-        font-weight: 700 !important;
-      }
-
-      .btn-primary, .btn-ctl-primary {
-        background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%) !important;
-        border-color: #7c3aed !important;
-        box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35) !important;
-        color: #ffffff !important;
-      }
-      .btn-primary:hover, .btn-ctl-primary:hover {
-        background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%) !important;
-        border-color: #8b5cf6 !important;
-        box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45) !important;
-        color: #ffffff !important;
-      }
-
-      .fap-home-student-card__left,
-      .cap-home-student-card__left {
-        background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 55%, #a855f7 100%) !important;
-        color: #ffffff !important;
-      }
-      .fap-home-student-card__left *,
-      .cap-home-student-card__left * {
-        color: #ffffff !important;
-      }
-      .fap-home-student-card__avatar,
-      .cap-home-student-card__avatar {
-        background: rgba(255, 255, 255, 0.2) !important;
-        border: 2px solid rgba(255, 255, 255, 0.4) !important;
-      }
-
-      .account-user-avatar.cap-topbar-avatar,
-      .account-user-avatar.fap-topbar-avatar {
-        background: linear-gradient(135deg, #a855f7, #6d28d9) !important;
-        color: #ffffff !important;
-        font-weight: bold;
-      }
-
-      .badge-soft-primary { background: rgba(124, 58, 237, 0.18) !important; color: #7c3aed !important; }
-      .badge-soft-success { background: rgba(16, 185, 129, 0.18) !important; color: #10b981 !important; }
-      .badge-soft-warning { background: rgba(245, 158, 11, 0.18) !important; color: #f59e0b !important; }
-      .badge-soft-danger { background: rgba(239, 68, 68, 0.18) !important; color: #ef4444 !important; }
-      .badge-soft-info { background: rgba(14, 165, 233, 0.18) !important; color: #0ea5e9 !important; }
-
-      .table-timetable th, .table-timetable td { text-align: center; vertical-align: middle; }
-      .slot-card { background: rgba(124, 58, 237, 0.05); border-radius: 8px; padding: 8px; margin: 2px; border-left: 3px solid #7c3aed; font-size: 13px; text-align: left; }
-      .slot-card.attended { border-left-color: #10b981; }
-      .slot-card.absent { border-left-color: #ef4444; }
-      .slot-card.not-yet { border-left-color: #f59e0b; }
-
-      .logo-topbar .logo-lg img { height: 38px !important; width: auto !important; max-width: 210px !important; }
-      .leftside-menu .logo-lg img { height: 44px !important; width: auto !important; max-width: 220px !important; }
-      .logo-topbar .logo-sm img, .leftside-menu .logo-sm img { height: 34px !important; width: 34px !important; }
-    </style>
+    <link href="/css/cap-theme.css" rel="stylesheet">
     <script src="/js/theme.js"></script>
 </head>
 <body>
-    <div id="preloader" style="display: none;">
-        <div id="status" style="display: none;">
+    <div class="d-none" id="preloader">
+        <div class="d-none" id="status">
             <div class="bouncing-loader"><div></div><div></div><div></div></div>
         </div>
     </div>
@@ -417,11 +112,11 @@ function renderLayout({ title, currentPath = '/', content = '', student, lang = 
                         </div>
                     </li>
 
-                    <!-- Notification -->
-                    <li class="dropdown notification-list">
+                    <!-- Notification (rendered server-side; js/cap-ui.js marks items read) -->
+                    <li class="dropdown notification-list" data-cap-bell>
                         <a class="nav-link dropdown-toggle arrow-none fap-topbar-icon" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
                             <i class="ri-notification-3-line fs-22"></i>
-                            <span class="noti-icon-badge"></span>
+                            <span class="noti-icon-badge ${unreadCount ? '' : 'd-none'}" data-cap-bell-badge></span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated dropdown-lg py-0">
                             <div class="p-2 border-top-0 border-start-0 border-end-0 border-dashed border">
@@ -430,26 +125,28 @@ function renderLayout({ title, currentPath = '/', content = '', student, lang = 
                                         <h6 class="m-0 fs-16 fw-semibold">${dict.notifications}</h6>
                                     </div>
                                     <div class="col-auto">
-                                        <a href="#" role="button" data-prevent-default class="text-dark text-decoration-underline">
+                                        <a href="#" role="button" data-cap-bell-markall class="text-dark text-decoration-underline ${unreadCount ? '' : 'd-none'}">
                                             <small>${dict.markAllRead}</small>
                                         </a>
                                     </div>
                                 </div>
                             </div>
-                            <div style="max-height: 250px;" data-simplebar>
-                                <a href="#" role="button" data-prevent-default class="dropdown-item p-0 notify-item unread-noti card m-0 shadow-none">
+                            <div class="cap-maxh-250" data-simplebar>
+                                ${notifications.length ? notifications.map(n => `
+                                <a href="${n.href}" data-cap-notification="${n.id}" data-unread="${n.is_read ? '0' : '1'}" class="dropdown-item p-0 notify-item ${n.is_read ? 'read-noti' : 'unread-noti'} card m-0 shadow-none">
                                     <div class="card-body">
                                         <div class="d-flex align-items-center">
                                             <div class="flex-shrink-0">
-                                                <div class="notify-icon bg-primary"><i class="ri-calendar-event-line"></i></div>
+                                                <div class="notify-icon ${n.is_read ? 'bg-secondary' : 'bg-primary'}"><i class="ri-notification-2-line"></i></div>
                                             </div>
                                             <div class="flex-grow-1 text-truncate ms-2">
-                                                <h5 class="noti-item-title fw-semibold fs-14 m-0">Lịch thi kỳ Fall 2026 đã được cập nhật</h5>
-                                                <small class="noti-item-subtitle text-muted">02/11/2026 23:27</small>
+                                                <h5 class="noti-item-title fw-semibold fs-14 m-0">${n.title}</h5>
+                                                <small class="noti-item-subtitle text-muted d-block text-truncate">${n.body}</small>
+                                                <small class="text-muted">${n.created_at}</small>
                                             </div>
                                         </div>
                                     </div>
-                                </a>
+                                </a>`).join('') : `<div class="text-center text-muted small p-3">${isEn ? 'No notifications' : 'Không có thông báo'}</div>`}
                             </div>
                         </div>
                     </li>
@@ -877,7 +574,6 @@ ${staffMenu || `
     <script src="/js/app-toast.js"></script>
     <script src="/js/base.js"></script>
     <script src="/js/sidebar-state.js"></script>
-    <script src="/js/notification-bell.js"></script>
     <script src="/js/cap-ui.js"></script>
 </body>
 </html>`;

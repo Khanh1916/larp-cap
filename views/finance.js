@@ -65,12 +65,12 @@ function renderShoppingCart({ cartItems, student, errorMsg = null, successMsg = 
           <table class="table table-hover table-striped mb-0">
             <thead class="table-light">
               <tr>
-                <th style="width: 50px;" class="text-center">STT</th>
+                <th class="cap-w-50 text-center">STT</th>
                 <th>Tên khoản thu</th>
                 <th>Học kỳ</th>
-                <th class="text-end" style="width: 180px;">Số tiền</th>
-                <th class="text-center" style="width: 140px;">Hạn nộp</th>
-                <th class="text-center" style="width: 160px;">Thao tác</th>
+                <th class="cap-w-180 text-end">Số tiền</th>
+                <th class="cap-w-140 text-center">Hạn nộp</th>
+                <th class="cap-w-160 text-center">Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -118,7 +118,7 @@ function renderTransactions({ transactions, student }) {
           <table class="table table-hover table-striped mb-0">
             <thead class="table-light">
               <tr>
-                <th style="width: 50px;" class="text-center">STT</th>
+                <th class="cap-w-50 text-center">STT</th>
                 <th>Mã GD</th>
                 <th>Loại giao dịch</th>
                 <th>Nội dung</th>
@@ -282,7 +282,7 @@ function renderCoursePendingPayment({ student, pendingCourses = [], semesters = 
           <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr>
-                <th class="text-center" style="width: 50px;">${isEn ? '#' : 'STT'}</th>
+                <th class="cap-w-50 text-center">${isEn ? '#' : 'STT'}</th>
                 <th>${isEn ? 'Course Code' : 'Mã môn'}</th>
                 <th>${isEn ? 'Course Name' : 'Tên môn học'}</th>
                 <th class="text-center">${isEn ? 'Credits' : 'Số tín chỉ'}</th>

@@ -150,6 +150,21 @@ function getAuthenticatedStudent(req) {
 }
 
 // Unified Render Helper with i18n
+// Latest notifications for the topbar bell (rendered server-side).
+function bellData(req) {
+  const owner = req.student?.roll_number;
+  if (!owner) return { notifications: [], unreadCount: 0 };
+  const notifications = db.getNotifications(owner).slice(0, 10).map(n => ({
+    id: n.id,
+    title: n.title,
+    body: n.body,
+    created_at: n.created_at,
+    is_read: Boolean(n.is_read),
+    href: safeReturnUrl(n.link_url, '#')
+  }));
+  return { notifications: safe(notifications), unreadCount: db.getUnreadNotifCount(owner) };
+}
+
 function renderPage(res, req, { title, currentPath, content, student }) {
   const translatedTitle = i18n.translateTitle(title, req.lang);
   let html = renderLayout({
@@ -159,7 +174,8 @@ function renderPage(res, req, { title, currentPath, content, student }) {
     student: safe(student),
     lang: req.lang,
     demoMode: DEMO_MODE,
-    staffMenu: req.isStaff ? staffMenu({ role: req.user.role, currentPath, lang: req.lang }) : ''
+    staffMenu: req.isStaff ? staffMenu({ role: req.user.role, currentPath, lang: req.lang }) : '',
+    ...bellData(req)
   });
   if (req.lang === 'en') {
     html = i18n.translateHtml(html, 'en');
@@ -199,62 +215,7 @@ app.get('/Auth/Login', (req, res) => {
       <link rel="icon" type="image/svg+xml" href="/assets/images/logo-ctl.svg">
       <link href="/assets/vendor/jidox/css/app.min.css" rel="stylesheet" type="text/css">
       <link href="/assets/vendor/jidox/css/icons.min.css" rel="stylesheet" type="text/css">
-      <style>
-        body {
-          background: radial-gradient(circle at 50% 20%, #21153b 0%, #0c0a1a 75%);
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          color: #f8fafc;
-        }
-        .login-card {
-          width: 100%;
-          max-width: 460px;
-          border-radius: 16px;
-          background: #15122a;
-          border: 1px solid rgba(168, 85, 247, 0.25);
-          box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 40px rgba(124, 58, 237, 0.2);
-          padding: 2.25rem;
-        }
-        .brand-logo {
-          height: 52px;
-          display: block;
-          margin: 0 auto 1.5rem auto;
-        }
-        .btn-ctl-primary {
-          background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
-          color: #fff;
-          border: none;
-        }
-        .btn-ctl-primary:hover {
-          background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-          color: #fff;
-        }
-        .account-pill {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0.65rem 0.85rem;
-          border-radius: 8px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
-          margin-bottom: 0.5rem;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          text-decoration: none;
-          color: inherit;
-        }
-        .account-pill:hover {
-          background: rgba(124, 58, 237, 0.18);
-          border-color: #a855f7;
-          color: #fff;
-        }
-        .badge-soft-primary { background: rgba(124, 58, 237, 0.2); color: #c084fc; }
-        .badge-soft-success { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .badge-soft-warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-      </style>
+      <link href="/css/login.css" rel="stylesheet">
     </head>
     <body>
       <div class="login-card">
@@ -904,7 +865,8 @@ app.get('/Notification/BellList', (req, res) => {
 app.post('/Notification/MarkRead', (req, res) => {
   const id = parseInt(req.body.id, 10);
   if (id) db.markNotifRead(id, req.student.roll_number);
-  res.json({ ok: true });
+  const unreadCount = db.getUnreadNotifCount(req.student.roll_number);
+  res.json({ ok: true, unreadCount, hasUnread: unreadCount > 0 });
 });
 
 app.post('/Notification/MarkReadAll', (req, res) => {

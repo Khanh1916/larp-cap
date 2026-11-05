@@ -126,12 +126,12 @@ function clearLoginFailures(req, username) {
 }
 
 // ---------- Security headers ----------
-// Scripts may only come from this origin (no inline script or on* handlers).
-// Inline style attributes are still used by the theme, so styles allow 'unsafe-inline'.
+// Scripts and stylesheets may only come from this origin: no inline <script>/<style>,
+// no on* handlers and no style="" attributes (CSSOM changes from our own JS still work).
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   "script-src 'self'",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "style-src 'self' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data:",
   "connect-src 'self'",

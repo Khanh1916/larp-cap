@@ -32,7 +32,7 @@ function renderTimetable({ schedules = [], semesters = [], currentSemester = 'Fa
   let tbodyHtml = '';
   for (const s of slots) {
     tbodyHtml += `<tr>
-      <td class="fw-semibold bg-light text-dark p-2" style="width: 120px;">
+      <td class="cap-w-120 fw-semibold bg-light text-dark p-2">
         <div>Slot ${s.id}</div>
         <small class="text-muted">${s.time}</small>
       </td>`;
@@ -97,7 +97,7 @@ function renderTimetable({ schedules = [], semesters = [], currentSemester = 'Fa
           <table class="table table-bordered table-timetable mb-0">
             <thead class="table-primary text-center">
               <tr>
-                <th style="width: 120px;">Ca học</th>
+                <th class="cap-w-120">Ca học</th>
                 ${days.map(d => `<th><div>${d.label}</div></th>`).join('')}
               </tr>
             </thead>

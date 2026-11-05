@@ -168,7 +168,7 @@ function renderTranscript({ student, attempts = [], summary, lang = 'vi' }) {
           <table class="table table-hover table-striped mb-0">
             <thead class="table-light">
               <tr>
-                <th class="text-center" style="width: 50px;">${isEn ? 'No.' : 'STT'}</th>
+                <th class="cap-w-50 text-center">${isEn ? 'No.' : 'STT'}</th>
                 <th>${isEn ? 'Semester' : 'Học kỳ'}</th>
                 <th>${isEn ? 'Code' : 'Mã môn'}</th>
                 <th>${isEn ? 'Subject' : 'Tên môn'}</th>

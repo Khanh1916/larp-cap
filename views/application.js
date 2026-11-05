@@ -32,7 +32,7 @@ function renderApplications({ applications, successMsg = null }) {
               <table class="table table-hover table-striped mb-0">
                 <thead class="table-light">
                   <tr>
-                    <th class="text-center" style="width: 50px;">STT</th>
+                    <th class="cap-w-50 text-center">STT</th>
                     <th>Loại đơn</th>
                     <th>Lý do / Nội dung</th>
                     <th class="text-center">Thời gian</th>

@@ -108,6 +108,9 @@ test('security headers are set and x-powered-by is hidden', async () => {
 test('Content-Security-Policy forbids inline and third-party script', async () => {
   const csp = (await server.get('/Auth/Login')).headers['content-security-policy'] || '';
   assert.match(csp, /script-src 'self'(;|$)/);
+  assert.ok(!csp.includes("'unsafe-inline'"), 'no unsafe-inline anywhere');
+  const login = (await server.get('/Auth/Login')).body;
+  assert.ok(!/<style[\s>]|\sstyle="/i.test(login), 'login page has no inline styles');
   assert.match(csp, /object-src 'none'/);
   assert.match(csp, /frame-ancestors 'none'/);
   assert.match(csp, /form-action 'self'/);

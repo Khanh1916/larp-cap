@@ -51,12 +51,12 @@ function renderCurriculum({ curriculum, majorCode = '', majorName = '', cohort =
               <table class="table table-hover table-sm mb-0">
                 <thead class="table-light">
                   <tr>
-                    <th style="width: 50px;" class="text-center">${isEn ? 'No.' : 'STT'}</th>
+                    <th class="cap-w-50 text-center">${isEn ? 'No.' : 'STT'}</th>
                     <th>${isEn ? 'Code' : 'Mã môn'}</th>
                     <th>${isEn ? 'Subject' : 'Tên môn học'}</th>
-                    <th style="width: 100px;" class="text-center">${isEn ? 'Credits' : 'Số tín chỉ'}</th>
+                    <th class="cap-w-100 text-center">${isEn ? 'Credits' : 'Số tín chỉ'}</th>
                     <th>${isEn ? 'Prerequisites' : 'Môn tiên quyết'}</th>
-                    <th style="width: 110px;" class="text-center">${isEn ? 'Status' : 'Trạng thái'}</th>
+                    <th class="cap-w-110 text-center">${isEn ? 'Status' : 'Trạng thái'}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -111,10 +111,10 @@ function renderSubjects({ subjects }) {
           <table class="table table-hover table-striped mb-0">
             <thead class="table-light">
               <tr>
-                <th style="width: 60px;" class="text-center">STT</th>
+                <th class="cap-w-60 text-center">STT</th>
                 <th>Mã môn học</th>
                 <th>Tên môn học</th>
-                <th style="width: 120px;" class="text-center">Số tín chỉ</th>
+                <th class="cap-w-120 text-center">Số tín chỉ</th>
                 <th>Bộ môn phụ trách</th>
               </tr>
             </thead>

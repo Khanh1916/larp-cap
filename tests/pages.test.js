@@ -40,6 +40,8 @@ for (const lang of ['vi', 'en']) {
       assert.ok(!/<script(?![^>]*\ssrc=)[^>]*>/i.test(res.body), `${route} has an inline <script>`);
       assert.ok(!/\son[a-z]+\s*=\s*["']/i.test(res.body), `${route} has an inline on* handler`);
       assert.ok(!/javascript:/i.test(res.body), `${route} has a javascript: URL`);
+      assert.ok(!/<style[\s>]/i.test(res.body), `${route} has an inline <style>`);
+      assert.ok(!/\sstyle\s*=\s*["']/i.test(res.body), `${route} has a style="" attribute`);
     }
   });
 }

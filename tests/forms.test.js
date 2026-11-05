@@ -65,3 +65,16 @@ test('notifications can only be marked read by their owner', async () => {
   await server.post('/Notification/MarkRead', 'id=' + other.id, { Cookie: cookie });
   assert.equal(query('SELECT is_read FROM notifications WHERE id = ?', other.id).is_read, 0);
 });
+
+test('the topbar bell lists real notifications and clears after "mark all read"', async () => {
+  const page = await server.get('/Report/Grade', { Cookie: cookie });
+  assert.ok(page.body.includes('Lịch thi mới'), 'seeded notification title');
+  assert.ok(page.body.indexOf('Lịch thi mới') < page.body.indexOf('Nhắc nhở học tập'), 'newest notification first');
+  assert.ok(!page.body.includes('Lịch thi kỳ Fall 2026 đã được cập nhật'), 'old hard-coded item is gone');
+  assert.match(page.body, /class="noti-icon-badge "\s+data-cap-bell-badge/, 'badge visible while unread');
+
+  const res = await server.post('/Notification/MarkReadAll', '', { Cookie: cookie });
+  assert.equal(res.statusCode, 200);
+  const after = await server.get('/Report/Grade', { Cookie: cookie });
+  assert.match(after.body, /class="noti-icon-badge d-none"\s+data-cap-bell-badge/, 'badge hidden when all read');
+});

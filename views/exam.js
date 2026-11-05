@@ -80,46 +80,6 @@ function renderExamSchedule({ exams = [], semesters = [], currentSemester = 'Fal
     : `<option value="${currentSemester}" selected>${semObj.name || currentSemester}</option>`;
 
   return `
-    <style>
-      .ctl-exam-table th {
-        padding: 12px 14px;
-        font-weight: 600;
-        font-size: 13.5px;
-        white-space: nowrap;
-      }
-      .ctl-exam-table td {
-        padding: 13px 14px;
-        font-size: 13.5px;
-        vertical-align: middle;
-      }
-      html[data-bs-theme="dark"] .ctl-exam-table thead th {
-        background-color: rgba(124, 58, 237, 0.16) !important;
-        color: #c084fc !important;
-        border-bottom: 2px solid rgba(168, 85, 247, 0.25) !important;
-      }
-      html[data-bs-theme="dark"] .ctl-exam-table tbody tr td {
-        border-bottom: 1px solid rgba(168, 85, 247, 0.1) !important;
-        color: #94a3b8;
-      }
-      html[data-bs-theme="dark"] .ctl-exam-table tbody tr:hover td {
-        background-color: rgba(124, 58, 237, 0.08) !important;
-        color: #f8fafc;
-      }
-
-      html[data-bs-theme="light"] .ctl-exam-table thead th {
-        background-color: rgba(124, 58, 237, 0.08) !important;
-        color: #6d28d9 !important;
-        border-bottom: 2px solid rgba(124, 58, 237, 0.2) !important;
-      }
-      html[data-bs-theme="light"] .ctl-exam-table tbody tr td {
-        border-bottom: 1px solid rgba(124, 58, 237, 0.08) !important;
-        color: #334155;
-      }
-      html[data-bs-theme="light"] .ctl-exam-table tbody tr:hover td {
-        background-color: rgba(124, 58, 237, 0.04) !important;
-        color: #1e1b4b;
-      }
-    </style>
 
     <div class="card mb-3">
       <div class="card-body p-3">
@@ -149,15 +109,15 @@ function renderExamSchedule({ exams = [], semesters = [], currentSemester = 'Fal
           <table class="table align-middle mb-0 ctl-exam-table">
             <thead>
               <tr>
-                <th class="text-center" style="min-width: 105px;">${isEn ? 'Date' : 'Ngày'}</th>
-                <th class="text-center" style="min-width: 125px;">${isEn ? 'Time' : 'Thời gian'}</th>
-                <th class="text-center" style="min-width: 90px;">${isEn ? 'Room' : 'Phòng'}</th>
-                <th style="min-width: 250px;">${isEn ? 'Subject' : 'Môn thi'}</th>
-                <th class="text-center" style="min-width: 175px;">${isEn ? 'Format' : 'Hình thức thi'}</th>
-                <th class="text-center" style="min-width: 90px;">${isEn ? 'Type' : 'Loại thi'}</th>
-                <th class="text-center" style="min-width: 135px;">${isEn ? 'Result Date' : 'Ngày công bố điểm'}</th>
-                <th class="text-center" style="min-width: 130px;">${isEn ? 'Attendance Note' : 'Ghi chú điểm danh'}</th>
-                <th class="text-center" style="min-width: 95px;">${isEn ? 'Note' : 'Ghi chú'}</th>
+                <th class="cap-minw-105 text-center">${isEn ? 'Date' : 'Ngày'}</th>
+                <th class="cap-minw-125 text-center">${isEn ? 'Time' : 'Thời gian'}</th>
+                <th class="cap-minw-90 text-center">${isEn ? 'Room' : 'Phòng'}</th>
+                <th class="cap-minw-250">${isEn ? 'Subject' : 'Môn thi'}</th>
+                <th class="cap-minw-175 text-center">${isEn ? 'Format' : 'Hình thức thi'}</th>
+                <th class="cap-minw-90 text-center">${isEn ? 'Type' : 'Loại thi'}</th>
+                <th class="cap-minw-135 text-center">${isEn ? 'Result Date' : 'Ngày công bố điểm'}</th>
+                <th class="cap-minw-130 text-center">${isEn ? 'Attendance Note' : 'Ghi chú điểm danh'}</th>
+                <th class="cap-minw-95 text-center">${isEn ? 'Note' : 'Ghi chú'}</th>
               </tr>
             </thead>
             <tbody>

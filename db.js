@@ -981,7 +981,7 @@ module.exports = {
     `).get(id);
   },
   getNotifications: (roll) => {
-    return db.prepare('SELECT * FROM notifications WHERE user_id = ? ORDER BY id DESC').all(roll);
+    return db.prepare('SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC, id DESC').all(roll);
   },
   getUnreadNotifCount: (roll) => {
     const res = db.prepare('SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0').get(roll);

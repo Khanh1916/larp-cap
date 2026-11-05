@@ -29,13 +29,17 @@ Hệ thống được chuyển đổi sang bộ nhận diện thương hiệu h�
 ```
 f:\larp-cap\
 ├── server.js              # Server Backend Express & Định tuyến 27+ Routes
-├── security.js            # Escape HTML, băm mật khẩu, chống CSRF/open redirect, header bảo mật
+├── security.js            # Escape HTML, băm mật khẩu, chống CSRF/open redirect, CSP & header bảo mật
+├── grading.js             # Quy tắc tính điểm môn, điểm chữ, GPA hệ 10/hệ 4, xếp loại
+├── requirements.js        # Xét điều kiện OJT và KLTN từ hồ sơ thật
 ├── db.js                  # Cơ sở dữ liệu SQLite (node:sqlite), dữ liệu mẫu & Logic nghiệp vụ
 ├── cap.db                 # Database SQLite cục bộ — tự tạo khi chạy lần đầu, không commit
 ├── i18n.js                # Từ điển song ngữ vi / en
-├── index.html             # Trang chủ CAP Dashboard
 ├── views/
 │   ├── layout.js          # Khung giao diện dùng chung (Topbar, Sidebar, Theme, Notification)
+│   ├── home.js            # Trang chủ: thẻ sinh viên, tin tức mới nhất, menu nhanh
+│   ├── staff.js           # Khu vực cán bộ: duyệt yêu cầu, nhập điểm, điểm danh
+│   ├── change_password.js # Đổi mật khẩu / đăng xuất thiết bị khác
 │   ├── timetable.js       # Phân hệ Thời khóa biểu tuần
 │   ├── exam.js            # Phân hệ Lịch thi chuẩn 9 cột
 │   ├── attendance.js      # Phân hệ Báo cáo điểm danh
@@ -129,6 +133,13 @@ erDiagram
 - `/Auth/Login`: Cổng đăng nhập CAP chuẩn giao diện CTL (hỗ trợ Google OAuth mock, mật khẩu, và đăng nhập nhanh 1-click).
 - `/Auth/Logout`: Đăng xuất 100% chuẩn quy trình (xóa cookie phiên và chuyển hướng an toàn).
 - `/Auth/SwitchUser/:roll`: Chuyển đổi nhanh tài khoản trực tiếp ngay trên thanh Topbar.
+- `/Auth/ChangePassword`: **Đổi mật khẩu** (đăng xuất mọi thiết bị khác) và nút **Đăng xuất thiết bị khác**.
+
+### VI. Khu vực cán bộ (`/Staff`)
+- Tài khoản giảng viên / Phòng Đào tạo chỉ thấy khu vực này; sinh viên truy cập sẽ nhận lỗi 403.
+- `/Staff/Requests` *(admin)*: **Duyệt / từ chối** đơn từ, đơn đổi lớp chéo, wishlist và hồ sơ khởi nghiệp; sinh viên nhận thông báo kết quả.
+- `/Staff/Grades` *(giảng viên: lớp mình dạy; admin: mọi lớp)*: **Nhập điểm thành phần** cho sinh viên trong lớp; điểm môn, GPA và điều kiện OJT/KLTN của sinh viên tự cập nhật theo.
+- `/Staff/Attendance` *(giảng viên / admin)*: **Điểm danh từng buổi** (chỉ buổi đã diễn ra theo giờ Việt Nam); tỉ lệ vắng và trạng thái cấm thi (> 20%) của sinh viên cập nhật ngay, sinh viên bị ghi vắng nhận thông báo.
 
 ---
 
@@ -140,7 +151,7 @@ Hệ thống cơ sở dữ liệu `cap.db` đã được nạp dữ liệu đầ
 3. **Fall 2025** (Kỳ 3): CSD201, DBI202, NWC203, VOV134.
 4. **Spring 2026** (Kỳ 4): PRN211, MAS291, SWE201, IAE301.
 5. **Summer 2026**: Kì chuyển tiếp / thực tập định hướng.
-6. **Fall 2026** (Kỳ 5 - Hiện tại): KRG301, KOR411, VOV114, IAE301, SWP391.
+6. **Fall 2026** (Kỳ 5 - Hiện tại): KRG301, KOR411, ITE302, SWP391 và học lại IAE301.
 7. **Spring 2027**: Học kỳ dự kiến.
 
 Tất cả các trang **Thời khóa biểu**, **Lịch thi**, **Điểm danh**, và **Báo cáo điểm** đều có dropdown học kỳ hoạt động 100% (`?semester=...`), tự động truy vấn dữ liệu quá khứ tương ứng từ SQLite và tính toán GPA tích lũy động.
@@ -153,7 +164,8 @@ Tất cả các trang **Thời khóa biểu**, **Lịch thi**, **Điểm danh**,
 |---|---|---|---|
 | `CT193667` | **Cao Thanh Lâm** | K19 - An toàn thông tin (BIT_IA) | `123456` |
 | `SE180123` | **Trần Hoàng Long** | K18 - Kỹ thuật phần mềm (BIT_SE) | `123456` |
-| `GV001` | **ThS. Hoàng Quốc Khánh** | Giảng viên CNTT | `123456` |
+| `GV001` | **ThS. Hoàng Quốc Khánh** | Giảng viên — nhập điểm các lớp mình dạy (`/Staff/Grades`) | `123456` |
+| `AD001` | **Phòng Đào tạo CTL** | Admin — duyệt đơn, đổi lớp, wishlist, khởi nghiệp (`/Staff/Requests`) và nhập điểm mọi lớp | `123456` |
 
 ---
 

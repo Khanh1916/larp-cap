@@ -1,3 +1,12 @@
+// Badge colour for request statuses set by the academic office.
+const APPROVED_STATUSES = new Set(['Đã duyệt', 'Đã xếp lớp', 'Đã được duyệt hỗ trợ']);
+const REJECTED_STATUSES = new Set(['Từ chối', 'Không mở lớp', 'Không được duyệt']);
+function statusTone(status) {
+  if (APPROVED_STATUSES.has(status)) return 'badge-soft-success';
+  if (REJECTED_STATUSES.has(status)) return 'badge-soft-danger';
+  return 'badge-soft-warning';
+}
+
 function renderWishlist({ wishlist, subjects, successMsg = null }) {
   let rows = wishlist.map((w, idx) => `
     <tr>
@@ -6,7 +15,7 @@ function renderWishlist({ wishlist, subjects, successMsg = null }) {
       <td>${w.semester_code}</td>
       <td>${w.desired_slot}</td>
       <td>${w.note || '-'}</td>
-      <td class="text-center"><span class="badge badge-soft-warning">${w.status}</span></td>
+      <td class="text-center"><span class="badge ${statusTone(w.status)}">${w.status}</span></td>
       <td class="text-center text-muted small">${w.created_at}</td>
     </tr>
   `).join('');
@@ -96,7 +105,7 @@ function renderCrossClass({ requests, successMsg = null }) {
       <td><span class="badge bg-secondary">${r.from_class}</span></td>
       <td><span class="badge bg-primary">${r.to_class}</span></td>
       <td>${r.reason}</td>
-      <td class="text-center"><span class="badge badge-soft-success">${r.status}</span></td>
+      <td class="text-center"><span class="badge ${statusTone(r.status)}">${r.status}</span></td>
       <td class="text-center text-muted small">${r.created_at}</td>
     </tr>
   `).join('');
@@ -178,7 +187,7 @@ function renderStartup({ groups, successMsg = null }) {
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <span class="badge badge-soft-info">${g.field}</span>
-            <span class="badge bg-success">${g.status}</span>
+            <span class="badge ${statusTone(g.status)}">${g.status}</span>
           </div>
           <h5 class="text-primary fw-bold my-1">${g.project_name}</h5>
           <p class="text-muted small mb-2">${g.description}</p>
@@ -372,7 +381,7 @@ function renderDocuments({ documents }) {
       <td class="text-center">${d.file_size}</td>
       <td class="text-center text-muted small">${d.updated_at}</td>
       <td class="text-center">
-        <a href="javascript:alert('Đang tải tài liệu: ${d.title}');" class="btn btn-sm btn-outline-primary">
+        <a href="#" role="button" data-alert-message="Đang tải tài liệu: ${d.title}" class="btn btn-sm btn-outline-primary">
           <i class="ri-download-2-line me-1"></i>Tải về
         </a>
       </td>
@@ -480,7 +489,7 @@ function renderWishlistRegister({ subjects = [], semesters = [], currentSemester
       <td>${w.semester_code}</td>
       <td>${w.desired_slot}</td>
       <td>${w.note || '-'}</td>
-      <td class="text-center"><span class="badge badge-soft-warning">${w.status}</span></td>
+      <td class="text-center"><span class="badge ${statusTone(w.status)}">${w.status}</span></td>
       <td class="text-center text-muted small">${w.created_at}</td>
     </tr>
   `).join('');

@@ -162,10 +162,10 @@ function renderTopup({ student, successMsg = null, errorMsg = null }) {
                   <span class="input-group-text">VND</span>
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
-                  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.querySelector('input[name=amount]').value=200000">200.000đ</button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.querySelector('input[name=amount]').value=500000">500.000đ</button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.querySelector('input[name=amount]').value=1000000">1.000.000đ</button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.querySelector('input[name=amount]').value=5000000">5.000.000đ</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-fill-target="input[name=amount]" data-fill-value="200000">200.000đ</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-fill-target="input[name=amount]" data-fill-value="500000">500.000đ</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-fill-target="input[name=amount]" data-fill-value="1000000">1.000.000đ</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" data-fill-target="input[name=amount]" data-fill-value="5000000">5.000.000đ</button>
                 </div>
               </div>
 
@@ -270,7 +270,7 @@ function renderCoursePendingPayment({ student, pendingCourses = [], semesters = 
         </h5>
         <div class="d-flex align-items-center gap-2">
           <span class="small fw-semibold">${isEn ? 'Semester:' : 'Học kỳ:'}</span>
-          <select class="form-select form-select-sm w-auto" onchange="location.href='?semester=' + this.value">
+          <select class="form-select form-select-sm w-auto" data-semester-select>
             <option value="Fall2026" ${currentSemester === 'Fall2026' ? 'selected' : ''}>Fall 2026</option>
             <option value="Summer2026" ${currentSemester === 'Summer2026' ? 'selected' : ''}>Summer 2026</option>
             <option value="Spring2026" ${currentSemester === 'Spring2026' ? 'selected' : ''}>Spring 2026</option>

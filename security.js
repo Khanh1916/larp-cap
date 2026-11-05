@@ -126,7 +126,23 @@ function clearLoginFailures(req, username) {
 }
 
 // ---------- Security headers ----------
+// Scripts may only come from this origin (no inline script or on* handlers).
+// Inline style attributes are still used by the theme, so styles allow 'unsafe-inline'.
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com data:",
+  "img-src 'self' data:",
+  "connect-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'"
+].join('; ');
+
 function securityHeaders(req, res, next) {
+  res.set('Content-Security-Policy', CONTENT_SECURITY_POLICY);
   res.set('X-Content-Type-Options', 'nosniff');
   res.set('X-Frame-Options', 'DENY');
   res.set('Referrer-Policy', 'same-origin');

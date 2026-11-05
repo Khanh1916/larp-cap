@@ -43,7 +43,8 @@ test('valid login sets a signed httpOnly session cookie', async () => {
   const res = await server.post('/Auth/Login', 'username=CT193667&password=123456');
   const raw = (res.headers['set-cookie'] || []).join(';');
   assert.equal(res.statusCode, 302);
-  assert.match(raw, /cap_user=s%3ACT193667\.[^;]+/);
+  // value "<username>:<session version>:<issued at>", signed
+  assert.match(raw, /cap_user=s%3ACT193667%3A0%3A\d+\.[^;]+/);
   assert.match(raw, /HttpOnly/i);
   assert.ok(sessionCookie(res));
 });
@@ -55,6 +56,10 @@ test('dashboard is personalised for CT193667', async () => {
   assert.ok(res.body.includes('CT193667'));
   // Seeded wallet balance is 1,500,000 VND
   assert.match(res.body, /wallet-amount">\s*1\.500\.000\s*<span/);
+  // News newest first (dates are stored as dd/mm/yyyy text): 02/11 before 28/10
+  const newer = res.body.indexOf('02/11/2026 23:27');
+  const older = res.body.indexOf('28/10/2026 11:27');
+  assert.ok(newer > 0 && older > 0 && newer < older, 'news sorted by date');
 });
 
 for (const [semester, subject] of [
@@ -85,6 +90,20 @@ test('cumulative transcript lists all semesters', async () => {
   assert.equal(res.statusCode, 200);
   assert.ok(res.body.includes('Bảng điểm chi tiết toàn khóa học'));
   assert.ok(res.body.includes('PRF192') && res.body.includes('SWP391'));
+  // Seed data: 13 graded subjects, 3 credits each (Vovinam excluded, IAE301 failed once)
+  assert.ok(res.body.includes('7.83'), 'GPA 10-point');
+  assert.ok(res.body.includes('3.23'), 'GPA 4-point');
+  assert.ok(res.body.includes('36 / 145'), 'credits earned');
+  assert.ok(res.body.includes('Giỏi'), 'academic standing');
+});
+
+test('grade report computes scores and marks unfinished subjects', async () => {
+  const past = await server.get('/Report/Grade?semester=Spring2025', { Cookie: ctCookie });
+  assert.match(past.body, />8\.6<\/span>/, 'PRF192 = 8.6 computed from components');
+
+  const current = await server.get('/Report/Grade?semester=Fall2026', { Cookie: ctCookie });
+  assert.ok(current.body.includes('Đang học'), 'in-progress badge');
+  assert.ok(current.body.includes('Chưa có điểm'), 'pending component');
 });
 
 test('second student sees own dashboard and OJT schedule', async () => {

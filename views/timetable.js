@@ -76,7 +76,7 @@ function renderTimetable({ schedules = [], semesters = [], currentSemester = 'Fa
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
           <div class="d-flex align-items-center gap-2">
             <span class="fw-semibold"><i class="ri-calendar-event-line text-primary me-1"></i>Học kỳ:</span>
-            <select class="form-select form-select-sm w-auto fw-medium" onchange="location.href='?semester=' + this.value">
+            <select class="form-select form-select-sm w-auto fw-medium" data-semester-select>
               ${semesterOptions}
             </select>
           </div>

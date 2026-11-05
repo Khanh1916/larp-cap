@@ -2,12 +2,10 @@
 // and every static file a page references actually exists.
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('fs');
-const path = require('path');
-const { ROOT, startServer, login } = require('./helpers');
+const { startServer, login } = require('./helpers');
 
 const ROUTES = [
-  '/', '/Home/StudentContentPartial', '/WeeklyTimetable', '/ExamSchedule', '/Report/Attendance',
+  '/', '/WeeklyTimetable', '/ExamSchedule', '/Report/Attendance',
   '/Report/Grade', '/Report/Transcript', '/Report/OjtConditions', '/Report/ThesisConditions',
   '/Curriculum', '/Subject', '/MyCertificates', '/ShoppingCart', '/CoursePendingPayment',
   '/Transaction', '/Finance/Topup', '/Application/Catalog', '/Application', '/CrossClassChange',
@@ -38,13 +36,17 @@ for (const lang of ['vi', 'en']) {
       for (const bad of BROKEN_OUTPUT) {
         assert.ok(!res.body.includes(bad), `${route} contains "${bad}"`);
       }
+      // The CSP forbids inline script, so none may appear in the markup.
+      assert.ok(!/<script(?![^>]*\ssrc=)[^>]*>/i.test(res.body), `${route} has an inline <script>`);
+      assert.ok(!/\son[a-z]+\s*=\s*["']/i.test(res.body), `${route} has an inline on* handler`);
+      assert.ok(!/javascript:/i.test(res.body), `${route} has a javascript: URL`);
     }
   });
 }
 
-// Internal links found in the dashboard page.
-function dashboardLinks() {
-  const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+// Internal links found on the rendered home page (sidebar, topbar, quick menu, news).
+async function dashboardLinks() {
+  const html = (await server.get('/', { Cookie: cookie })).body;
   const links = new Set();
   for (const m of html.matchAll(/(?:href|action)=["']([^"'#]+)["']/g)) {
     const url = m[1].split('?')[0];
@@ -56,14 +58,16 @@ function dashboardLinks() {
 }
 
 test('every dashboard link works when logged in and is protected when not', async () => {
-  const publicPaths = new Set(['/Auth/Login', '/Auth/Logout', '/Language/SetLanguage']);
-  const links = dashboardLinks();
+  // Pages reachable without a session (login, language switch, demo shortcuts).
+  const isPublic = url => ['/Auth/Login', '/Auth/Logout', '/Language/SetLanguage'].includes(url)
+    || /^\/(lang\/|Auth\/QuickLogin\/|Auth\/SwitchUser\/)/.test(url);
+  const links = await dashboardLinks();
   assert.ok(links.length > 20, `only ${links.length} links found`);
   for (const url of links) {
     if (url === '/Auth/Logout') continue; // would end the session used by the loop
     const authed = await server.get(url, { Cookie: cookie });
     assert.ok(authed.statusCode >= 200 && authed.statusCode < 400, `${url} -> ${authed.statusCode}`);
-    if (!publicPaths.has(url)) {
+    if (!isPublic(url)) {
       const anon = await server.get(url);
       assert.equal(anon.statusCode, 302, `${url} reachable without login`);
       assert.match(anon.headers.location, /\/Auth\/Login/);

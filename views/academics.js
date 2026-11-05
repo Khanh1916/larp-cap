@@ -1,4 +1,13 @@
-function renderCurriculum({ curriculum, majorCode = 'BIT_IA_19A_AS' }) {
+const CURRICULUM_STATUS = {
+  Passed: ['badge-soft-success', 'Đạt', 'Passed'],
+  InProgress: ['badge-soft-warning', 'Đang học', 'In progress'],
+  Failed: ['badge-soft-danger', 'Chưa đạt', 'Failed']
+};
+
+// statuses: { subject_code: 'Passed' | 'InProgress' | 'Failed' } from the student's record.
+// currentSemesterNo: curriculum semester the student is studying now (or null).
+function renderCurriculum({ curriculum, majorCode = '', majorName = '', cohort = '', statuses = {}, currentSemesterNo = null, lang = 'vi' }) {
+  const isEn = lang === 'en';
   // Group by semester_no
   const bySem = {};
   curriculum.forEach(c => {
@@ -18,30 +27,36 @@ function renderCurriculum({ curriculum, majorCode = 'BIT_IA_19A_AS' }) {
         <td>${item.subject_name}</td>
         <td class="text-center fw-semibold">${item.credits}</td>
         <td><small class="text-muted">${item.prerequisites}</small></td>
+        <td class="text-center">${CURRICULUM_STATUS[statuses[item.subject_code]]
+          ? `<span class="badge ${CURRICULUM_STATUS[statuses[item.subject_code]][0]}">${CURRICULUM_STATUS[statuses[item.subject_code]][isEn ? 2 : 1]}</span>`
+          : '<span class="text-muted small">-</span>'}</td>
       </tr>
     `).join('');
+
+    if (list.length === 0) continue;
 
     accordionsHtml += `
       <div class="accordion-item mb-2 border rounded">
         <h2 class="accordion-header" id="headingSem${sem}">
-          <button class="accordion-button ${sem === 5 ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSem${sem}">
+          <button class="accordion-button ${sem === currentSemesterNo ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSem${sem}">
             <div class="d-flex justify-content-between align-items-center w-100 me-3">
-              <span><strong>Học kỳ ${sem}</strong> ${sem === 5 ? '<span class="badge bg-primary ms-2">Học kỳ hiện tại</span>' : ''}</span>
-              <span class="badge badge-soft-info">${semCredits} tín chỉ (${list.length} môn)</span>
+              <span><strong>${isEn ? 'Semester' : 'Học kỳ'} ${sem}</strong> ${sem === currentSemesterNo ? `<span class="badge bg-primary ms-2">${isEn ? 'Current semester' : 'Học kỳ hiện tại'}</span>` : ''}</span>
+              <span class="badge badge-soft-info">${semCredits} ${isEn ? 'credits' : 'tín chỉ'} (${list.length} ${isEn ? 'subjects' : 'môn'})</span>
             </div>
           </button>
         </h2>
-        <div id="collapseSem${sem}" class="accordion-collapse collapse ${sem === 5 ? 'show' : ''}">
+        <div id="collapseSem${sem}" class="accordion-collapse collapse ${sem === currentSemesterNo ? 'show' : ''}">
           <div class="accordion-body p-0">
             <div class="table-responsive">
               <table class="table table-hover table-sm mb-0">
                 <thead class="table-light">
                   <tr>
-                    <th style="width: 50px;" class="text-center">STT</th>
-                    <th>Mã môn</th>
-                    <th>Tên môn học</th>
-                    <th style="width: 100px;" class="text-center">Số tín chỉ</th>
-                    <th>Môn tiên quyết</th>
+                    <th style="width: 50px;" class="text-center">${isEn ? 'No.' : 'STT'}</th>
+                    <th>${isEn ? 'Code' : 'Mã môn'}</th>
+                    <th>${isEn ? 'Subject' : 'Tên môn học'}</th>
+                    <th style="width: 100px;" class="text-center">${isEn ? 'Credits' : 'Số tín chỉ'}</th>
+                    <th>${isEn ? 'Prerequisites' : 'Môn tiên quyết'}</th>
+                    <th style="width: 110px;" class="text-center">${isEn ? 'Status' : 'Trạng thái'}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -60,16 +75,16 @@ function renderCurriculum({ curriculum, majorCode = 'BIT_IA_19A_AS' }) {
       <div class="card-body">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
           <div>
-            <h5 class="text-primary fw-bold m-0">Khung chương trình: ${majorCode}</h5>
-            <small class="text-muted">Chuyên ngành: An toàn thông tin (Information Assurance) - 145 Tín chỉ</small>
+            <h5 class="text-primary fw-bold m-0">${isEn ? 'Curriculum' : 'Khung chương trình'}: ${majorCode}</h5>
+            <small class="text-muted">${isEn ? 'Major' : 'Chuyên ngành'}: ${majorName} - ${curriculum.reduce((sum, c) => sum + c.credits, 0)} ${isEn ? 'credits' : 'tín chỉ'}</small>
           </div>
-          <span class="badge bg-success fs-13">Đang áp dụng cho Khóa 19</span>
+          <span class="badge bg-success fs-13">${isEn ? `Applies to cohort K${cohort}` : `Đang áp dụng cho Khóa ${cohort}`}</span>
         </div>
       </div>
     </div>
 
     <div class="accordion" id="curriculumAccordion">
-      ${accordionsHtml}
+      ${accordionsHtml || `<div class="card text-center py-5 text-muted">${isEn ? 'No curriculum for this programme yet.' : 'Chưa có khung chương trình cho mã ngành này.'}</div>`}
     </div>
   `;
 }
@@ -151,115 +166,84 @@ function renderCertificates({ certificates }) {
   `;
 }
 
-function renderOjtConditions({ student }) {
+// OJT / thesis eligibility. Input comes from requirements.js and is HTML-escaped by the caller.
+function criteriaTable(criteria, isEn, headers) {
+  const rows = criteria.map(c => {
+    const result = c.met
+      ? `<span class="text-success fw-bold"><i class="ri-check-line me-1"></i>${isEn ? 'Met' : 'Đạt'}</span>`
+      : c.pending
+        ? `<span class="text-warning fw-bold"><i class="ri-time-line me-1"></i>${isEn ? 'In progress' : 'Đang học'}</span>`
+        : `<span class="text-danger fw-bold"><i class="ri-close-line me-1"></i>${isEn ? 'Not met' : 'Chưa đạt'}</span>`;
+    return `
+              <tr>
+                <td>${isEn ? c.label.en : c.label.vi}</td>
+                <td>${isEn ? c.required.en : c.required.vi}</td>
+                <td><strong>${isEn ? c.actual.en : c.actual.vi}</strong></td>
+                <td class="text-center">${result}</td>
+              </tr>`;
+  }).join('');
   return `
-    <div class="card mb-3">
-      <div class="card-header bg-transparent border-bottom">
-        <h5 class="card-title m-0"><i class="ri-briefcase-line text-primary me-2"></i>Xét duyệt điều kiện đi thực tập doanh nghiệp (OJT)</h5>
-      </div>
-      <div class="card-body">
-        <div class="alert alert-success d-flex align-items-center gap-2">
-          <i class="ri-checkbox-circle-fill fs-22"></i>
-          <div>
-            <strong>Đủ điều kiện tham gia OJT!</strong> Sinh viên đã hoàn thành các điều kiện tiên quyết để đăng ký kỳ thực tập doanh nghiệp vào kỳ Spring 2027.
-          </div>
-        </div>
-
         <div class="table-responsive mt-3">
           <table class="table table-bordered">
             <thead class="table-light">
               <tr>
-                <th>Tiêu chí xét OJT</th>
-                <th>Yêu cầu</th>
-                <th>Thực tế sinh viên</th>
-                <th class="text-center">Kết quả</th>
+                <th>${headers[0]}</th>
+                <th>${isEn ? 'Requirement' : 'Yêu cầu'}</th>
+                <th>${isEn ? 'Student record' : 'Thực tế sinh viên'}</th>
+                <th class="text-center">${isEn ? 'Result' : 'Kết quả'}</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td>Số tín chỉ tích lũy</td>
-                <td>Tối thiểu 60 tín chỉ</td>
-                <td><strong>65 tín chỉ</strong></td>
-                <td class="text-center text-success fw-bold"><i class="ri-check-line me-1"></i>Đạt</td>
-              </tr>
-              <tr>
-                <td>Trình độ Tiếng Anh</td>
-                <td>Tối thiểu Level 5 hoặc B2</td>
-                <td><strong>Level 5 (B2)</strong></td>
-                <td class="text-center text-success fw-bold"><i class="ri-check-line me-1"></i>Đạt</td>
-              </tr>
-              <tr>
-                <td>Chứng chỉ Giáo dục thể chất</td>
-                <td>Hoàn thành VOV114, VOV124, VOV134</td>
-                <td><strong>Đang hoàn thành VOV114</strong></td>
-                <td class="text-center text-warning fw-bold"><i class="ri-time-line me-1"></i>Đang học</td>
-              </tr>
-              <tr>
-                <td>Môn cơ sở ngành bắt buộc</td>
-                <td>Đạt các môn PRF192, PRO192, CSD201, IAE301</td>
-                <td><strong>Đã đạt</strong></td>
-                <td class="text-center text-success fw-bold"><i class="ri-check-line me-1"></i>Đạt</td>
-              </tr>
+            <tbody>${rows}
             </tbody>
           </table>
-        </div>
+        </div>`;
+}
+
+function banner(tone, icon, title, text) {
+  return `
+        <div class="alert alert-${tone} d-flex align-items-center gap-2">
+          <i class="${icon} fs-22"></i>
+          <div><strong>${title}</strong> ${text}</div>
+        </div>`;
+}
+
+function renderOjtConditions({ ojt, lang = 'vi' }) {
+  const isEn = lang === 'en';
+  const banners = {
+    completed: ['success', 'ri-checkbox-circle-fill', isEn ? 'OJT completed.' : 'Đã hoàn thành OJT.', isEn ? 'The internship has been passed.' : 'Sinh viên đã hoàn thành kỳ thực tập doanh nghiệp.'],
+    in_progress: ['info', 'ri-briefcase-4-fill', isEn ? 'Currently on OJT.' : 'Đang thực tập doanh nghiệp.', isEn ? `Internship in progress (${ojt.ojtSemester}).` : `Sinh viên đang trong kỳ OJT (${ojt.ojtSemester}).`],
+    eligible: ['success', 'ri-checkbox-circle-fill', isEn ? 'Eligible for OJT!' : 'Đủ điều kiện tham gia OJT!', isEn ? 'All prerequisites are met.' : 'Sinh viên đã hoàn thành các điều kiện tiên quyết để đăng ký kỳ thực tập.'],
+    pending: ['warning', 'ri-time-fill', isEn ? 'Almost eligible.' : 'Sắp đủ điều kiện.', isEn ? 'The remaining requirements are subjects currently in progress.' : 'Các điều kiện còn thiếu đều là môn đang học trong kỳ này.'],
+    not_eligible: ['danger', 'ri-error-warning-fill', isEn ? 'Not yet eligible for OJT.' : 'Chưa đủ điều kiện tham gia OJT.', isEn ? 'See the requirements below.' : 'Xem các tiêu chí chưa đạt bên dưới.']
+  };
+  const [tone, icon, title, text] = banners[ojt.state];
+  const showCriteria = ojt.state !== 'completed' && ojt.state !== 'in_progress';
+  return `
+    <div class="card mb-3">
+      <div class="card-header bg-transparent border-bottom">
+        <h5 class="card-title m-0"><i class="ri-briefcase-line text-primary me-2"></i>${isEn ? 'On-the-job training (OJT) eligibility' : 'Xét duyệt điều kiện đi thực tập doanh nghiệp (OJT)'}</h5>
+      </div>
+      <div class="card-body">
+        ${banner(tone, icon, title, text)}
+        ${showCriteria ? criteriaTable(ojt.criteria, isEn, [isEn ? 'OJT criterion' : 'Tiêu chí xét OJT']) : ''}
       </div>
     </div>
   `;
 }
 
-function renderThesisConditions({ student }) {
+function renderThesisConditions({ thesis, lang = 'vi' }) {
+  const isEn = lang === 'en';
+  const eligible = thesis.state === 'eligible';
   return `
     <div class="card mb-3">
       <div class="card-header bg-transparent border-bottom">
-        <h5 class="card-title m-0"><i class="ri-graduation-cap-line text-primary me-2"></i>Xét duyệt điều kiện Khóa luận tốt nghiệp (KLTN / Capstone Project)</h5>
+        <h5 class="card-title m-0"><i class="ri-graduation-cap-line text-primary me-2"></i>${isEn ? 'Graduation thesis (Capstone) eligibility' : 'Xét duyệt điều kiện Khóa luận tốt nghiệp (KLTN / Capstone Project)'}</h5>
       </div>
       <div class="card-body">
-        <div class="alert alert-warning d-flex align-items-center gap-2">
-          <i class="ri-time-fill fs-22"></i>
-          <div>
-            <strong>Chưa đủ điều kiện (Đang học kỳ 5/9):</strong> Sinh viên cần hoàn thành kỳ OJT và tích lũy tối thiểu 120 tín chỉ để đăng ký đề tài KLTN.
-          </div>
-        </div>
-
-        <div class="table-responsive mt-3">
-          <table class="table table-bordered">
-            <thead class="table-light">
-              <tr>
-                <th>Tiêu chí KLTN</th>
-                <th>Yêu cầu</th>
-                <th>Thực tế sinh viên</th>
-                <th class="text-center">Trạng thái</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Tổng số tín chỉ hoàn thành</td>
-                <td>Tối thiểu 120 tín chỉ</td>
-                <td><strong>65 / 145</strong></td>
-                <td class="text-center text-warning fw-bold">Chưa đạt</td>
-              </tr>
-              <tr>
-                <td>Điểm trung bình tích lũy (GPA)</td>
-                <td>Tối thiểu 6.00 / 10</td>
-                <td><strong>8.42 / 10</strong></td>
-                <td class="text-center text-success fw-bold">Đạt</td>
-              </tr>
-              <tr>
-                <td>Kỳ thực tập doanh nghiệp (OJT)</td>
-                <td>Đã hoàn thành và có đánh giá đạt từ DN</td>
-                <td><strong>Chưa tham gia OJT</strong></td>
-                <td class="text-center text-warning fw-bold">Chưa đạt</td>
-              </tr>
-              <tr>
-                <td>Môn chuyên ngành cốt lõi</td>
-                <td>Hoàn thành SWP391, CRY301, PEN301</td>
-                <td><strong>Đang học SWP391</strong></td>
-                <td class="text-center text-warning fw-bold">Chưa đạt</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        ${eligible
+          ? banner('success', 'ri-checkbox-circle-fill', isEn ? 'Eligible for the thesis!' : 'Đủ điều kiện làm KLTN!', isEn ? 'All requirements are met.' : 'Sinh viên đã đáp ứng tất cả tiêu chí.')
+          : banner('warning', 'ri-time-fill', isEn ? 'Not yet eligible.' : 'Chưa đủ điều kiện.', isEn ? 'Complete the requirements below to register a thesis topic.' : 'Sinh viên cần hoàn thành các tiêu chí dưới đây để đăng ký đề tài KLTN.')}
+        ${criteriaTable(thesis.criteria, isEn, [isEn ? 'Thesis criterion' : 'Tiêu chí KLTN'])}
       </div>
     </div>
   `;

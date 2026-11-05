@@ -1,19 +1,23 @@
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
 const cookieParser = require('cookie-parser');
 const db = require('./db');
 const i18n = require('./i18n');
 
 const { renderLayout } = require('./views/layout');
+const { renderHome } = require('./views/home');
 const { renderTimetable } = require('./views/timetable');
 const { renderExamSchedule } = require('./views/exam');
 const { renderAttendance } = require('./views/attendance');
 const { renderGradeReport, renderTranscript } = require('./views/grade');
+const grading = require('./grading');
+const requirements = require('./requirements');
 const { renderNewsList, renderNewsDetail } = require('./views/news');
 const { renderAccount } = require('./views/account');
 const { renderApplications } = require('./views/application');
 const { renderEditProfile } = require('./views/student_profile');
+const { renderChangePassword } = require('./views/change_password');
+const { staffMenu, renderStaffHome, renderGradeClasses, renderRequests, renderGradeEntry, renderAttendanceEntry } = require('./views/staff');
 
 // Expanded modules
 const {
@@ -73,8 +77,27 @@ const SESSION_COOKIE_OPTS = {
   maxAge: 7 * 24 * 3600 * 1000
 };
 
+const SESSION_MAX_AGE_SEC = SESSION_COOKIE_OPTS.maxAge / 1000;
+
+// Cookie value "<username>:<session_version>:<issued-at seconds>", signed.
+// Bumping users.session_version (password change, "log out everywhere") revokes
+// every older cookie; the issue time stops a copied cookie living past 7 days.
 function setSession(res, user) {
-  res.cookie(SESSION_COOKIE, user.roll_number || user.username, SESSION_COOKIE_OPTS);
+  const issuedAt = Math.floor(Date.now() / 1000);
+  res.cookie(SESSION_COOKIE, `${user.username}:${user.session_version || 0}:${issuedAt}`, SESSION_COOKIE_OPTS);
+}
+
+function parseSession(value) {
+  if (typeof value !== 'string') return null;
+  const parts = value.split(':');
+  if (parts.length < 3) return null;
+  const issuedAt = Number(parts.pop());
+  const version = Number(parts.pop());
+  const username = parts.join(':');
+  if (!username || !Number.isInteger(version) || !Number.isInteger(issuedAt)) return null;
+  const age = Math.floor(Date.now() / 1000) - issuedAt;
+  if (age < -60 || age > SESSION_MAX_AGE_SEC) return null;
+  return { username, version };
 }
 
 function clearSession(res) {
@@ -105,22 +128,21 @@ app.use((req, res, next) => {
   next();
 });
 
+const STAFF_ROLES = new Set(['lecturer', 'admin']);
+
 // Helper to get authenticated student/user
 function getAuthenticatedStudent(req) {
-  // Only trust the signed cookie: an unsigned or tampered value is ignored.
-  const roll = req.signedCookies?.[SESSION_COOKIE];
-  if (!roll || typeof roll !== 'string') return null;
-  const user = db.findUser(roll) || db.getUserByRoll(roll);
-  if (!user) return null;
-  const student = db.getStudent(user.roll_number || user.username) || {
+  // Only trust the signed cookie: an unsigned or tampered value is ignored,
+  // and so is one whose session version was revoked or that is too old.
+  const session = parseSession(req.signedCookies?.[SESSION_COOKIE]);
+  if (!session) return null;
+  const user = db.getUserByUsername(session.username);
+  if (!user || (user.session_version || 0) !== session.version) return null;
+  // Staff have no student record: the "student" object is only their topbar profile.
+  const student = (!STAFF_ROLES.has(user.role) && db.getStudent(user.roll_number || user.username)) || {
     roll_number: user.roll_number || user.username,
     full_name: user.full_name,
     email: user.email,
-    campus_id: 'HN',
-    status: 'HD',
-    program_code: 'BIT_IA_19A_AS',
-    major_name: 'An toàn thông tin (Information Assurance)',
-    cohort: 19,
     balance: 0,
     avatar: user.avatar || 'CTL'
   };
@@ -136,7 +158,8 @@ function renderPage(res, req, { title, currentPath, content, student }) {
     content,
     student: safe(student),
     lang: req.lang,
-    demoMode: DEMO_MODE
+    demoMode: DEMO_MODE,
+    staffMenu: req.isStaff ? staffMenu({ role: req.user.role, currentPath, lang: req.lang }) : ''
   });
   if (req.lang === 'en') {
     html = i18n.translateHtml(html, 'en');
@@ -302,6 +325,13 @@ app.get('/Auth/Login', (req, res) => {
               </div>
               <span class="badge badge-soft-warning">${isEn ? 'Enter &rarr;' : 'Vào ngay &rarr;'}</span>
             </a>
+            <a href="/Auth/QuickLogin/AD001" class="account-pill">
+              <div>
+                <div class="fw-bold text-info">AD001 - Phòng Đào tạo CTL</div>
+                <div class="small text-muted">${isEn ? 'Academic office | Approvals' : 'Phòng Đào tạo | Duyệt đơn'}</div>
+              </div>
+              <span class="badge badge-soft-primary">${isEn ? 'Enter &rarr;' : 'Vào ngay &rarr;'}</span>
+            </a>
           </div>
         </div>` : ''}
 
@@ -356,6 +386,9 @@ app.get('/Auth/SwitchUser/:roll', demoOnly, (req, res) => {
 
 // Logout (GET & POST)
 app.all('/Auth/Logout', (req, res) => {
+  // A link or image on another site must not be able to log the user out.
+  // (Cross-site POSTs are already rejected by sameOriginGuard.)
+  if (req.get('sec-fetch-site') === 'cross-site') return res.redirect('/');
   clearSession(res);
   res.redirect('/Auth/Login?logged_out=1');
 });
@@ -384,9 +417,6 @@ app.get('/lang/:culture', (req, res) => {
   res.redirect(req.query.returnUrl ? safeReturnUrl(req.query.returnUrl) : safeReferer(req));
 });
 
-app.all('/Notification/SyncWebDevice', (req, res) => {
-  res.json({ ok: true, status: 'synced', token: 'mock_token_cap' });
-});
 
 // ---------------- AUTH GUARD MIDDLEWARE ----------------
 app.use((req, res, next) => {
@@ -397,131 +427,48 @@ app.use((req, res, next) => {
   }
   req.user = auth.user;
   req.student = auth.student;
+  req.isStaff = STAFF_ROLES.has(auth.user.role);
   next();
 });
 
-// ---------------- PROTECTED APPLICATION ROUTES ----------------
-
-// 1. Home Dashboard
-app.get('/', (req, res) => {
-  const student = req.student;
-  const htmlPath = path.join(__dirname, 'index.html');
-  let html = fs.readFileSync(htmlPath, 'utf8');
-
-  // Dynamically personalize index.html with the logged-in student's details
-  const balanceStr = (Number(student.balance) || 0).toLocaleString('vi-VN');
-  const avatar = student.avatar || (student.full_name ? student.full_name.split(' ').map(n => n[0]).join('').slice(0, 3) : 'CTL');
-
-  // Function replacements avoid "$&"-style patterns; values are HTML-escaped.
-  html = html
-    .replace(/Cao Thanh Lâm/g, () => esc(student.full_name))
-    .replace(/CT193667/g, () => esc(student.roll_number))
-    .replace(/lamctct193667@ctl\.edu\.vn/g, () => esc(student.email))
-    .replace(/BIT_IA_19A_AS/g, () => esc(student.program_code))
-    .replace(/1\.500\.000/g, () => balanceStr)
-    .replace(/(fap-home-student-card__wallet-amount">\s*)0(\s*<span)/, (m, a, b) => `${a}${balanceStr}${b}`)
-    .replace(/>CTL</g, () => `>${esc(avatar)}<`);
-
-  // Translate to English if requested
-  html = i18n.translateHtml(html, req.lang);
-
-  res.send(html);
+// ---------------- ROLE GATE ----------------
+// Staff only see /Staff pages (plus account and shared endpoints); students never see /Staff.
+const SHARED_PREFIXES = ['/Auth/', '/Notification/', '/Language/', '/lang/'];
+app.use((req, res, next) => {
+  const isShared = SHARED_PREFIXES.some(prefix => req.path.startsWith(prefix));
+  const isStaffPath = req.path === '/Staff' || req.path.startsWith('/Staff/');
+  if (req.isStaff && !isStaffPath && !isShared) return res.redirect('/Staff');
+  if (!req.isStaff && isStaffPath) return forbidden(req, res);
+  next();
 });
 
-// Dynamic student content partial for home page
-app.get('/Home/StudentContentPartial', (req, res) => {
-  const student = safe(req.student);
+function forbidden(req, res) {
   const isEn = req.lang === 'en';
-  const news = safe(db.getNews());
+  res.status(403);
+  renderPage(res, req, {
+    title: isEn ? 'Access denied' : 'Không có quyền truy cập',
+    currentPath: req.path,
+    content: `<div class="card text-center py-5"><div class="card-body">
+      <i class="ri-lock-2-line fs-1 text-danger d-block mb-2"></i>
+      <h4 class="fw-bold">${isEn ? 'You do not have permission to view this page.' : 'Bạn không có quyền truy cập trang này.'}</h4>
+      <a href="/" class="btn btn-primary btn-sm mt-2">${isEn ? 'Back to Home' : 'Quay lại Trang chủ'}</a>
+    </div></div>`,
+    student: req.student
+  });
+}
 
-  const newsItems = news.map(n => `
-    <a class="fap-home-news-item" href="/News/Detail/${n.id}">
-      <span class="fap-home-news-item__icon"><i class="ri-article-line"></i></span>
-      <span class="fap-home-news-item__body">
-        <span class="fap-home-news-item__title">${n.title}</span>
-        <span class="fap-home-news-item__meta">
-          <span class="badge bg-soft-primary text-primary">${n.author}</span>
-          <span class="text-muted small ms-2"><i class="ri-time-line me-1"></i>${n.published_at}</span>
-        </span>
-      </span>
-      <i class="ri-arrow-right-s-line fap-home-news-item__arrow align-self-center"></i>
-    </a>
-  `).join('');
+// ---------------- PROTECTED APPLICATION ROUTES ----------------
 
-  const html = `
-    <div class="row g-3">
-      <div class="col-12">
-        <div class="card cap-home-student-card fap-home-student-card">
-          <div class="row g-0">
-            <div class="col-lg-3 fap-home-student-card__left p-4 d-flex flex-column justify-content-center">
-              <div class="d-flex align-items-center gap-3">
-                <div class="fap-home-student-card__avatar">
-                  ${student.avatar || 'CTL'}
-                </div>
-                <div>
-                  <div class="text-white-50 small text-uppercase fw-semibold mb-1">
-                    ${isEn ? 'Student Information' : 'Thông tin sinh viên'}
-                  </div>
-                  <div class="fap-home-student-card__name mb-1">${student.full_name}</div>
-                  <div class="fap-home-student-card__roll">${student.roll_number}</div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-9 p-4">
-              <div class="row g-3">
-                <div class="col-sm-6 col-xl">
-                  <div class="fap-home-student-card__metric">
-                    <div class="fap-home-student-card__label fap-home-student-card__label--primary"><i class="ri-shield-check-line"></i>${isEn ? 'Status' : 'Trạng thái'}</div>
-                    <div class="fap-home-student-card__value">${student.status}</div>
-                  </div>
-                </div>
-                <div class="col-sm-6 col-xl">
-                  <div class="fap-home-student-card__metric">
-                    <div class="fap-home-student-card__label fap-home-student-card__label--info"><i class="ri-book-open-line"></i>${isEn ? 'Program Code' : 'Mã chương trình'}</div>
-                    <div class="fap-home-student-card__value text-primary">${student.program_code}</div>
-                  </div>
-                </div>
-                <div class="col-sm-6 col-xl">
-                  <div class="fap-home-student-card__metric">
-                    <div class="fap-home-student-card__label fap-home-student-card__label--warning"><i class="ri-mail-line"></i>Email</div>
-                    <div class="fap-home-student-card__value text-break">${student.email}</div>
-                  </div>
-                </div>
-                <div class="col-sm-6 col-xl">
-                  <div class="fap-home-student-card__metric">
-                    <div class="fap-home-student-card__label fap-home-student-card__label--secondary"><i class="ri-calendar-line"></i>${isEn ? 'Cohort' : 'Khóa'}</div>
-                    <div class="fap-home-student-card__value">${student.cohort}</div>
-                  </div>
-                </div>
-                <div class="col-sm-6 col-xl">
-                  <div class="fap-home-student-card__metric fap-home-student-card__metric--wallet">
-                    <div class="fap-home-student-card__label fap-home-student-card__label--success"><i class="ri-wallet-3-line"></i>${isEn ? 'Balance' : 'Số dư'}</div>
-                    <div class="fap-home-student-card__wallet-amount">${(Number(student.balance) || 0).toLocaleString('vi-VN')} <span class="fs-6 fw-medium">VND</span></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12">
-        <div class="card fap-home-news-card">
-          <div class="card-header border-bottom bg-transparent d-flex justify-content-between align-items-center">
-            <h4 class="header-title m-0 fap-home-news-card__header-title"><i class="ri-newspaper-line me-1 text-primary"></i>${isEn ? 'Latest Announcements' : 'Tin tức mới nhất'}</h4>
-            <a href="/News" class="btn btn-sm btn-outline-primary">${isEn ? 'View all' : 'Xem tất cả'} &rarr;</a>
-          </div>
-          <div class="card-body p-0">
-            <div class="fap-home-news-list">
-              ${newsItems}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  res.send(req.lang === 'en' ? i18n.translateHtml(html, 'en') : html);
+// 1. Home Dashboard (rendered in the shared layout like every other page)
+app.get('/', (req, res) => {
+  const student = db.getStudent(req.student.roll_number) || req.student;
+  const content = renderHome(safe({
+    student,
+    news: db.getNews().slice(0, 8),
+    categories: db.getNewsCategories(),
+    lang: req.lang
+  }));
+  renderPage(res, req, { title: req.lang === 'en' ? 'Welcome' : 'Chào mừng', currentPath: '/', content, student });
 });
 
 // 2. Weekly Timetable (Multi-Semester)
@@ -558,31 +505,42 @@ app.get('/Report/Attendance', (req, res) => {
 app.get('/Report/Grade', (req, res) => {
   const student = req.student;
   const semester = semesterParam(req);
-  const grades = db.getGrades(student.roll_number, semester);
+  const attempts = grading.groupAttempts(db.getGrades(student.roll_number, semester));
+  const summary = grading.summarize(attempts);
   const semesters = db.getSemesters();
-  const content = renderGradeReport(safe({ grades, semesters, currentSemester: semester }));
+  const content = renderGradeReport(safe({ attempts, summary, semesters, currentSemester: semester, lang: req.lang }));
   renderPage(res, req, { title: 'Báo cáo điểm', currentPath: '/Report/Grade', content, student });
 });
 
 // 6. Cumulative Transcript (Calculated from all past semesters)
 app.get('/Report/Transcript', (req, res) => {
   const student = req.student;
-  const transcriptGrades = db.getAllGradesForTranscript(student.roll_number);
-  const content = renderTranscript(safe({ student, transcriptGrades }));
+  const attempts = grading.groupAttempts(db.getAllGradesForTranscript(student.roll_number));
+  const summary = grading.summarize(attempts);
+  const content = renderTranscript(safe({ student, attempts, summary, lang: req.lang }));
   renderPage(res, req, { title: 'Bảng điểm tích lũy', currentPath: '/Report/Transcript', content, student });
 });
 
 // 7. OJT Conditions
 app.get('/Report/OjtConditions', (req, res) => {
   const student = req.student;
-  const content = renderOjtConditions(safe({ student }));
+  const attempts = grading.groupAttempts(db.getAllGradesForTranscript(student.roll_number));
+  const ojt = requirements.ojtStatus({
+    student,
+    attempts,
+    curriculum: db.getCurriculum(student.program_code),
+    certificates: db.getCertificates(student.roll_number)
+  });
+  const content = renderOjtConditions(safe({ ojt, lang: req.lang }));
   renderPage(res, req, { title: 'Điều kiện OJT', currentPath: '/Report/OjtConditions', content, student });
 });
 
 // 8. Thesis Conditions
 app.get('/Report/ThesisConditions', (req, res) => {
   const student = req.student;
-  const content = renderThesisConditions(safe({ student }));
+  const attempts = grading.groupAttempts(db.getAllGradesForTranscript(student.roll_number));
+  const thesis = requirements.thesisStatus({ student, attempts });
+  const content = renderThesisConditions(safe({ thesis, lang: req.lang }));
   renderPage(res, req, { title: 'Điều kiện KLTN', currentPath: '/Report/ThesisConditions', content, student });
 });
 
@@ -590,7 +548,15 @@ app.get('/Report/ThesisConditions', (req, res) => {
 app.get('/Curriculum', (req, res) => {
   const student = req.student;
   const curriculum = db.getCurriculum(student.program_code);
-  const content = renderCurriculum(safe({ curriculum, majorCode: student.program_code }));
+  const attempts = grading.groupAttempts(db.getAllGradesForTranscript(student.roll_number));
+  const statusMap = requirements.subjectStatuses(attempts);
+  const statuses = Object.fromEntries(statusMap);
+  // Current curriculum semester = the one holding the subjects being studied now.
+  const studying = curriculum.filter(c => statusMap.get(c.subject_code) === 'InProgress').map(c => c.semester_no);
+  const currentSemesterNo = studying.length ? Math.max(...studying) : null;
+  const content = renderCurriculum(safe({
+    curriculum, majorCode: student.program_code, majorName: student.major_name, cohort: student.cohort, statuses, currentSemesterNo, lang: req.lang
+  }));
   renderPage(res, req, { title: 'Khung chương trình', currentPath: '/Curriculum', content, student });
 });
 
@@ -850,6 +816,41 @@ app.get('/News/Detail/:id', (req, res) => {
   renderPage(res, req, { title: item ? item.title : 'Chi tiết tin', currentPath: '/News', content, student });
 });
 
+// Change password / sign out other devices
+app.get('/Auth/ChangePassword', (req, res) => {
+  const content = renderChangePassword({ success: req.query.success, error: req.query.error, lang: req.lang });
+  renderPage(res, req, { title: req.lang === 'en' ? 'Change Password' : 'Đổi mật khẩu', currentPath: '/Auth/ChangePassword', content, student: req.student });
+});
+
+app.post('/Auth/ChangePassword', (req, res) => {
+  const user = req.user;
+  const current = typeof req.body.current_password === 'string' ? req.body.current_password : '';
+  const next = typeof req.body.new_password === 'string' ? req.body.new_password : '';
+  const confirm = typeof req.body.confirm_password === 'string' ? req.body.confirm_password : '';
+  const fail = code => res.redirect('/Auth/ChangePassword?error=' + code);
+
+  // Wrong current-password guesses share the login lockout counter.
+  if (security.isLoginBlocked(req, user.username)) return fail('too_many_attempts');
+  if (!verifyPassword(current, user.password)) {
+    security.recordLoginFailure(req, user.username);
+    return fail('wrong_current');
+  }
+  if (next.length < 8 || next.length > 200) return fail('too_short');
+  if (next !== confirm) return fail('mismatch');
+  if (next === current) return fail('same_as_current');
+
+  security.clearLoginFailures(req, user.username);
+  const version = db.updatePassword(user.id, security.hashPassword(next));
+  setSession(res, { ...user, session_version: version }); // keep this device signed in
+  res.redirect('/Auth/ChangePassword?success=changed');
+});
+
+app.post('/Auth/LogoutOtherDevices', (req, res) => {
+  const version = db.bumpSessionVersion(req.user.id);
+  setSession(res, { ...req.user, session_version: version });
+  res.redirect('/Auth/ChangePassword?success=logged_out_others');
+});
+
 // 20. Student Profile & Edit Profile
 app.get('/Account', (req, res) => {
   const student = db.getStudent(req.student.roll_number) || req.student;
@@ -909,6 +910,198 @@ app.post('/Notification/MarkRead', (req, res) => {
 app.post('/Notification/MarkReadAll', (req, res) => {
   db.markAllNotifRead(req.student.roll_number);
   res.json({ ok: true, hasUnread: false, unreadCount: 0 });
+});
+
+// ---------------- STAFF AREA ----------------
+// The role gate above already limits /Staff to lecturer and admin accounts.
+
+function staffClasses(user) {
+  return user.role === 'admin' ? db.getAllClasses() : db.getClassesForLecturer(user.full_name);
+}
+
+function canGradeClass(user, cls) {
+  return Boolean(cls) && (user.role === 'admin' || cls.lecturer_name === user.full_name);
+}
+
+function adminOnly(req, res, next) {
+  if (req.user.role !== 'admin') return forbidden(req, res);
+  next();
+}
+
+const STAFF_FLASH = {
+  approved: ['success', 'Đã duyệt yêu cầu và gửi thông báo cho sinh viên.', 'Request approved; the student has been notified.'],
+  rejected: ['success', 'Đã từ chối yêu cầu và gửi thông báo cho sinh viên.', 'Request rejected; the student has been notified.'],
+  not_pending: ['danger', 'Yêu cầu không tồn tại hoặc đã được xử lý.', 'The request does not exist or was already handled.'],
+  saved: ['success', 'Đã lưu điểm.', 'Grades saved.'],
+  unchanged: ['success', 'Không có điểm nào thay đổi.', 'No grades changed.'],
+  invalid_score: ['danger', 'Điểm không hợp lệ: phải từ 0 đến 10. Chưa lưu thay đổi nào.', 'Invalid score: must be between 0 and 10. Nothing was saved.'],
+  attendance_saved: ['success', 'Đã lưu điểm danh.', 'Attendance saved.'],
+  invalid_attendance: ['danger', 'Trạng thái điểm danh không hợp lệ hoặc buổi học chưa diễn ra. Chưa lưu thay đổi nào.', 'Invalid attendance value or a future session. Nothing was saved.']
+};
+
+// Today's date in Vietnam (YYYY-MM-DD). CAP_TODAY pins it for tests and demos.
+function todayVN() {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(process.env.CAP_TODAY || '')) return process.env.CAP_TODAY;
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }).format(new Date());
+}
+
+function staffFlash(req) {
+  const f = STAFF_FLASH[req.query.ok] || STAFF_FLASH[req.query.error];
+  return f ? { tone: f[0], text: f[req.lang === 'en' ? 2 : 1] } : null;
+}
+
+app.get('/Staff', (req, res) => {
+  const content = renderStaffHome(safe({
+    role: req.user.role,
+    user: { full_name: req.user.full_name, email: req.user.email },
+    counts: req.user.role === 'admin' ? db.countPendingRequests() : {},
+    classes: staffClasses(req.user),
+    lang: req.lang
+  }));
+  renderPage(res, req, { title: req.lang === 'en' ? 'Staff overview' : 'Tổng quan cán bộ', currentPath: '/Staff', content, student: req.student });
+});
+
+app.get('/Staff/Requests', adminOnly, (req, res) => {
+  const type = db.REQUEST_TYPES[req.query.type] ? req.query.type : 'applications';
+  const content = renderRequests(safe({
+    type,
+    rows: db.listRequests(type),
+    counts: db.countPendingRequests(),
+    flash: staffFlash(req),
+    lang: req.lang
+  }));
+  renderPage(res, req, { title: req.lang === 'en' ? 'Request approvals' : 'Duyệt yêu cầu', currentPath: `/Staff/Requests?type=${type}`, content, student: req.student });
+});
+
+app.post('/Staff/Requests/:type/:id', adminOnly, (req, res) => {
+  const { type } = req.params;
+  const cfg = db.REQUEST_TYPES[type];
+  const id = parseInt(req.params.id, 10);
+  const decision = req.body.decision;
+  if (!cfg || !Number.isInteger(id) || !['approve', 'reject'].includes(decision)) {
+    return res.redirect(`/Staff/Requests?type=${cfg ? type : 'applications'}&error=not_pending`);
+  }
+  const row = db.decideRequest(type, id, decision === 'approve');
+  if (!row) return res.redirect(`/Staff/Requests?type=${type}&error=not_pending`);
+  const kind = { applications: 'Đơn', cross_class: 'Đơn đổi lớp', wishlist: 'Wishlist', startup: 'Hồ sơ khởi nghiệp' }[type];
+  db.addNotification(row.student_roll, `${kind} đã được xử lý`, `${kind} #${row.id} của bạn: ${row.status}.`, cfg.link);
+  res.redirect(`/Staff/Requests?type=${type}&ok=${decision === 'approve' ? 'approved' : 'rejected'}`);
+});
+
+app.get('/Staff/Grades', (req, res) => {
+  const content = renderGradeClasses(safe({ classes: staffClasses(req.user), lang: req.lang }));
+  renderPage(res, req, { title: req.lang === 'en' ? 'Grade entry' : 'Nhập điểm', currentPath: '/Staff/Grades', content, student: req.student });
+});
+
+function classGradeSheet(cls) {
+  return db.getClassStudents(cls.id).map(st => {
+    const components = db.getGradeComponents(st.roll_number, cls.subject_code, cls.semester_code);
+    const { score, complete } = grading.subjectScore(components);
+    const status = !complete ? 'InProgress' : score >= grading.PASS_MARK ? 'Passed' : 'Failed';
+    return { ...st, components, score, status };
+  });
+}
+
+app.get('/Staff/Grades/:classId', (req, res) => {
+  const cls = db.getClass(parseInt(req.params.classId, 10));
+  if (!canGradeClass(req.user, cls)) return forbidden(req, res);
+  const content = renderGradeEntry(safe({ cls, students: classGradeSheet(cls), flash: staffFlash(req), lang: req.lang }));
+  renderPage(res, req, { title: req.lang === 'en' ? 'Grade entry' : 'Nhập điểm', currentPath: `/Staff/Grades/${cls.id}`, content, student: req.student });
+});
+
+app.post('/Staff/Grades/:classId', (req, res) => {
+  const cls = db.getClass(parseInt(req.params.classId, 10));
+  if (!canGradeClass(req.user, cls)) return forbidden(req, res);
+  const back = `/Staff/Grades/${cls.id}`;
+
+  // Validate every submitted value first, so a typo saves nothing.
+  // Only components that belong to students of this class are read; other fields are ignored.
+  const updates = [];
+  for (const st of classGradeSheet(cls)) {
+    for (const c of st.components) {
+      const key = `g_${c.id}`;
+      if (!(key in req.body)) continue;
+      const raw = String(req.body[key]).trim();
+      let value = null;
+      if (raw !== '') {
+        value = Number(raw);
+        if (!Number.isFinite(value) || value < 0 || value > 10) return res.redirect(`${back}?error=invalid_score`);
+        value = Math.round(value * 10) / 10;
+      }
+      if (value !== c.value) updates.push({ st, c, value });
+    }
+  }
+  if (updates.length === 0) return res.redirect(`${back}?ok=unchanged`);
+
+  const notified = new Set();
+  for (const { st, c, value } of updates) {
+    db.setGradeComponent(c.id, st.roll_number, cls.subject_code, cls.semester_code, value);
+    if (!notified.has(st.roll_number)) {
+      notified.add(st.roll_number);
+      db.addNotification(st.roll_number, 'Điểm số cập nhật',
+        `Điểm môn ${cls.subject_code} (${cls.semester_name}) vừa được giảng viên cập nhật.`,
+        `/Report/Grade?semester=${cls.semester_code}`);
+    }
+  }
+  res.redirect(`${back}?ok=saved`);
+});
+
+app.get('/Staff/Attendance', (req, res) => {
+  const content = renderGradeClasses(safe({
+    classes: staffClasses(req.user),
+    heading: req.lang === 'en' ? 'Choose a class to take attendance' : 'Chọn lớp để điểm danh',
+    lang: req.lang
+  }));
+  renderPage(res, req, { title: req.lang === 'en' ? 'Attendance' : 'Điểm danh', currentPath: '/Staff/Attendance', content, student: req.student });
+});
+
+function classSessions(cls, today) {
+  const map = new Map();
+  for (const r of db.getClassSessions(cls.id)) {
+    const key = `${r.study_date}|${r.slot}`;
+    if (!map.has(key)) map.set(key, { date: r.study_date, slot: r.slot, room: r.room, locked: r.study_date > today, rows: [] });
+    map.get(key).rows.push(r);
+  }
+  return [...map.values()];
+}
+
+app.get('/Staff/Attendance/:classId', (req, res) => {
+  const cls = db.getClass(parseInt(req.params.classId, 10));
+  if (!canGradeClass(req.user, cls)) return forbidden(req, res);
+  const today = todayVN();
+  const content = renderAttendanceEntry(safe({ cls, sessions: classSessions(cls, today), today, flash: staffFlash(req), lang: req.lang }));
+  renderPage(res, req, { title: req.lang === 'en' ? 'Attendance' : 'Điểm danh', currentPath: `/Staff/Attendance/${cls.id}`, content, student: req.student });
+});
+
+app.post('/Staff/Attendance/:classId', (req, res) => {
+  const cls = db.getClass(parseInt(req.params.classId, 10));
+  if (!canGradeClass(req.user, cls)) return forbidden(req, res);
+  const back = `/Staff/Attendance/${cls.id}`;
+  const today = todayVN();
+  const allowed = new Set(['Attended', 'Absent', 'Not yet']);
+
+  // Validate everything first; only sessions of this class are read.
+  const changes = [];
+  for (const sess of classSessions(cls, today)) {
+    for (const r of sess.rows) {
+      const key = `a_${r.id}`;
+      if (!(key in req.body)) continue;
+      const to = String(req.body[key]);
+      if (!allowed.has(to)) return res.redirect(`${back}?error=invalid_attendance`);
+      if (to === r.status) continue;
+      if (sess.locked && to !== 'Not yet') return res.redirect(`${back}?error=invalid_attendance`);
+      changes.push({ id: r.id, student_roll: r.student_roll, from: r.status, to, date: r.study_date, slot: r.slot });
+    }
+  }
+  if (changes.length === 0) return res.redirect(`${back}?ok=unchanged`);
+
+  db.markAttendance(cls, changes);
+  for (const ch of changes.filter(c => c.to === 'Absent')) {
+    db.addNotification(ch.student_roll, 'Điểm danh',
+      `Bạn bị ghi vắng buổi ${ch.date} (slot ${ch.slot}) môn ${cls.subject_code}.`,
+      `/Report/Attendance?semester=${cls.semester_code}`);
+  }
+  res.redirect(`${back}?ok=attendance_saved`);
 });
 
 // 22. Catch-all fallback 404 handler that stays inside CAP layout

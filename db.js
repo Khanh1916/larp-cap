@@ -10,6 +10,29 @@ const db = new DatabaseSync(dbPath);
 db.exec('PRAGMA journal_mode = WAL;');
 db.exec('PRAGMA foreign_keys = ON;');
 
+// news.published_at is stored as "dd/mm/yyyy hh:mm" text; sort it as yyyymmdd hh:mm.
+const NEWS_DATE_SORT = "(substr(n.published_at, 7, 4) || substr(n.published_at, 4, 2) || substr(n.published_at, 1, 2) || substr(n.published_at, 11))";
+
+// Student requests that the academic office approves. Statuses match the seed data.
+const REQUEST_TYPES = {
+  applications: {
+    table: 'applications', link: '/Application',
+    pending: ['Đang xử lý', 'Đang chờ duyệt'], approved: 'Đã duyệt', rejected: 'Từ chối'
+  },
+  cross_class: {
+    table: 'cross_class_requests', link: '/CrossClassChange',
+    pending: ['Chờ duyệt'], approved: 'Đã duyệt', rejected: 'Từ chối'
+  },
+  wishlist: {
+    table: 'wishlist', link: '/Wishlist',
+    pending: ['Chờ xếp lớp', 'Đang chờ lớp mở'], approved: 'Đã xếp lớp', rejected: 'Không mở lớp'
+  },
+  startup: {
+    table: 'startup_groups', link: '/StartupGroup',
+    pending: ['Chờ xét duyệt'], approved: 'Đã được duyệt hỗ trợ', rejected: 'Không được duyệt'
+  }
+};
+
 function initDatabase() {
   db.exec(`
     CREATE TABLE IF NOT EXISTS campuses (
@@ -258,8 +281,18 @@ function initDatabase() {
     );
   `);
 
+  migrateSchema();
   seedAll();
   migratePlaintextPasswords();
+}
+
+// Additive schema changes for databases created by older versions.
+function migrateSchema() {
+  const userCols = db.prepare('PRAGMA table_info(users)').all().map(c => c.name);
+  if (!userCols.includes('session_version')) {
+    // Bumped on password change / "log out everywhere": every older session cookie becomes invalid.
+    db.exec('ALTER TABLE users ADD COLUMN session_version INTEGER NOT NULL DEFAULT 0');
+  }
 }
 
 // Hash any password still stored in plaintext (seed data or databases created before hashing).
@@ -293,6 +326,7 @@ function seedAll() {
   insertUser.run('CT193667', 'lamctct193667@ctl.edu.vn', '123456', 'CT193667', 'Cao Thanh Lâm', 'student', 'CTL');
   insertUser.run('SE180123', 'longthse180123@ctl.edu.vn', '123456', 'SE180123', 'Trần Hoàng Long', 'student', 'HL');
   insertUser.run('GV001', 'khanhhq@ctl.edu.vn', '123456', null, 'ThS. Hoàng Quốc Khánh', 'lecturer', 'HK');
+  insertUser.run('AD001', 'daotao@ctl.edu.vn', '123456', null, 'Phòng Đào tạo CTL', 'admin', 'PĐT');
 
   // 3. Students
   const insertStudent = db.prepare(`
@@ -375,7 +409,13 @@ function seedAll() {
     ['PEN301', 'Penetration Testing and Ethical Hacking', 3, 'An toàn thông tin'],
     ['MAL301', 'Malware Analysis and Reverse Engineering', 3, 'An toàn thông tin'],
     ['MLN131', 'Chủ nghĩa xã hội khoa học', 2, 'Lý luận chính trị'],
-    ['SEP490', 'Graduation Thesis / Capstone Project', 10, 'KLTN']
+    ['SEP490', 'Graduation Thesis / Capstone Project', 10, 'KLTN'],
+    // Software Engineering track
+    ['PRJ301', 'Java Web Application Development', 3, 'Kỹ thuật phần mềm'],
+    ['SWT301', 'Software Testing', 3, 'Kỹ thuật phần mềm'],
+    ['SWD392', 'Software Architecture and Design', 3, 'Kỹ thuật phần mềm'],
+    ['PRM392', 'Mobile Programming', 3, 'Kỹ thuật phần mềm'],
+    ['EXE201', 'Experiential Entrepreneurship 2', 3, 'Kỹ năng']
   ];
   subjectsData.forEach(s => insertSubject.run(...s));
 
@@ -404,7 +444,7 @@ function seedAll() {
   // Fall 2026 (Current)
   insertClass.run('IA1901_KRG', 'KRG301', 'Fall2026', 'Park Sun Young', 'BE-302');
   insertClass.run('IA1901_KOR', 'KOR411', 'Fall2026', 'Lee Min Ho', 'BE-304');
-  insertClass.run('IA1901_VOV_F26', 'VOV114', 'Fall2026', 'Võ Sư Nguyễn Văn Nam', 'Sân Vovinam 2');
+  insertClass.run('IA1901_ITE', 'ITE302', 'Fall2026', 'ThS. Nguyễn Thị Thu', 'BE-105');
   insertClass.run('IA1901_IAE', 'IAE301', 'Fall2026', 'TS. Trần Tuấn Anh', 'AL-405');
   insertClass.run('IA1901_SWP', 'SWP391', 'Fall2026', 'ThS. Hoàng Quốc Khánh', 'DE-201');
 
@@ -451,13 +491,13 @@ function seedAll() {
   // CT193667 - Fall 2026 current week (Nov 02 - Nov 08, 2026)
   insertSchedule.run(17, 'CT193667', 'Fall2026', '2026-11-02', 1, 1, 'BE-302', 'Park Sun Young', 'Attended');
   insertSchedule.run(20, 'CT193667', 'Fall2026', '2026-11-02', 1, 2, 'AL-405', 'TS. Trần Tuấn Anh', 'Attended');
-  insertSchedule.run(19, 'CT193667', 'Fall2026', '2026-11-03', 2, 3, 'Sân Vovinam 2', 'Võ Sư Nguyễn Văn Nam', 'Attended');
+  insertSchedule.run(19, 'CT193667', 'Fall2026', '2026-11-03', 2, 3, 'BE-105', 'ThS. Nguyễn Thị Thu', 'Attended');
   insertSchedule.run(21, 'CT193667', 'Fall2026', '2026-11-03', 2, 4, 'DE-201', 'ThS. Hoàng Quốc Khánh', 'Attended');
   insertSchedule.run(18, 'CT193667', 'Fall2026', '2026-11-04', 3, 1, 'BE-304', 'Lee Min Ho', 'Not yet');
   insertSchedule.run(20, 'CT193667', 'Fall2026', '2026-11-04', 3, 2, 'AL-405', 'TS. Trần Tuấn Anh', 'Not yet');
   insertSchedule.run(17, 'CT193667', 'Fall2026', '2026-11-05', 4, 2, 'BE-302', 'Park Sun Young', 'Not yet');
   insertSchedule.run(21, 'CT193667', 'Fall2026', '2026-11-05', 4, 3, 'DE-201', 'ThS. Hoàng Quốc Khánh', 'Not yet');
-  insertSchedule.run(19, 'CT193667', 'Fall2026', '2026-11-06', 5, 1, 'Sân Vovinam 2', 'Võ Sư Nguyễn Văn Nam', 'Not yet');
+  insertSchedule.run(19, 'CT193667', 'Fall2026', '2026-11-06', 5, 1, 'BE-105', 'ThS. Nguyễn Thị Thu', 'Not yet');
   insertSchedule.run(18, 'CT193667', 'Fall2026', '2026-11-06', 5, 4, 'BE-304', 'Lee Min Ho', 'Not yet');
 
   // SE180123 Schedules
@@ -467,6 +507,8 @@ function seedAll() {
   insertSchedule.run(26, 'SE180123', 'Fall2026', '2026-11-05', 4, 2, 'CTL Hi-Tech Campus', 'Mentor CTL Software', 'Not yet');
   insertSchedule.run(26, 'SE180123', 'Fall2026', '2026-11-06', 5, 1, 'CTL Hi-Tech Campus', 'Mentor CTL Software', 'Not yet');
   insertSchedule.run(24, 'SE180123', 'Spring2026', '2026-03-02', 1, 2, 'DE-201', 'ThS. Hoàng Quốc Khánh', 'Attended');
+  insertSchedule.run(22, 'SE180123', 'Fall2025', '2025-09-08', 1, 3, 'DE-201', 'ThS. Hoàng Quốc Khánh', 'Attended');
+  insertSchedule.run(23, 'SE180123', 'Fall2025', '2025-09-10', 3, 2, 'AL-402', 'TS. Nguyễn Thị Thu Hà', 'Attended');
   insertSchedule.run(25, 'SE180123', 'Spring2026', '2026-03-04', 3, 1, 'BE-105', 'ThS. Nguyễn Thị Thu', 'Attended');
 
   // 8. Exam Schedules for ALL semesters
@@ -492,12 +534,10 @@ function seedAll() {
   insertExam.run('CT193667', 'SWE201', 'Spring2026', '2026-04-18', '13:00 - 14:30', 4, 'AL-402', 'FE lần 1');
   insertExam.run('CT193667', 'IAE301', 'Spring2026', '2026-04-22', '14:30 - 16:00', 5, 'AL-405', 'PE (Practical Exam)');
   // Fall 2026 (Current)
-  insertExam.run('CT193667', 'VOV114', 'Fall2026', '2026-11-04', '09:15 - 10:45', 2, 'Sân Vovinam 1', 'FE lần 2');
+  insertExam.run('CT193667', 'ITE302', 'Fall2026', '2026-11-20', '13:00 - 14:30', 4, 'BE-105', 'FE lần 1');
   insertExam.run('CT193667', 'KRG301', 'Fall2026', '2026-11-15', '07:30 - 09:00', 1, 'BE-201', 'FE lần 1');
   insertExam.run('CT193667', 'KOR411', 'Fall2026', '2026-11-18', '11:00 - 12:30', 3, 'BE-205', 'FE lần 1');
-  insertExam.run('CT193667', 'MLN131', 'Fall2026', '2026-11-22', '09:10 - 10:40', 2, 'BE-221', 'FE');
   insertExam.run('CT193667', 'IAE301', 'Fall2026', '2026-11-25', '14:30 - 16:00', 5, 'AL-402', 'PE (Practical Exam)');
-  insertExam.run('CT193667', 'MLN131', 'Fall2026', '2026-11-29', '10:50 - 12:20', 3, '-', '2NDFE');
   insertExam.run('CT193667', 'SWP391', 'Fall2026', '2026-12-05', '08:00 - 11:30', 1, 'DE-Bảo vệ KLTN', 'Bảo vệ Project');
 
   // SE180123 Exams
@@ -517,80 +557,99 @@ function seedAll() {
   insertGrade.run('CT193667', 'PRF192', 'Spring2025', 'Lab 1-5', 0.2, 8.5, 'Passed');
   insertGrade.run('CT193667', 'PRF192', 'Spring2025', 'Practical Exam', 0.3, 8.0, 'Passed');
   insertGrade.run('CT193667', 'PRF192', 'Spring2025', 'Final Exam', 0.4, 8.8, 'Passed');
-  insertGrade.run('CT193667', 'PRF192', 'Spring2025', 'Average', 1.0, 8.52, 'Passed');
 
   insertGrade.run('CT193667', 'MAE101', 'Spring2025', 'Assignment', 0.2, 8.0, 'Passed');
   insertGrade.run('CT193667', 'MAE101', 'Spring2025', 'Midterm Exam', 0.3, 7.5, 'Passed');
   insertGrade.run('CT193667', 'MAE101', 'Spring2025', 'Final Exam', 0.5, 8.2, 'Passed');
-  insertGrade.run('CT193667', 'MAE101', 'Spring2025', 'Average', 1.0, 7.95, 'Passed');
+
+  insertGrade.run('CT193667', 'CSI104', 'Spring2025', 'Assignment', 0.3, 8.0, 'Passed');
+  insertGrade.run('CT193667', 'CSI104', 'Spring2025', 'Progress Test', 0.2, 7.5, 'Passed');
+  insertGrade.run('CT193667', 'CSI104', 'Spring2025', 'Final Exam', 0.5, 7.8, 'Passed');
+
+  // Physical education is pass/fail (not counted in GPA)
+  insertGrade.run('CT193667', 'VOV114', 'Spring2025', 'Final Exam', 1.0, 7.0, 'Passed');
 
   // Summer 2025
   insertGrade.run('CT193667', 'PRO192', 'Summer2025', 'Attendance', 0.1, 10.0, 'Passed');
   insertGrade.run('CT193667', 'PRO192', 'Summer2025', 'Practical Exam', 0.4, 9.0, 'Passed');
   insertGrade.run('CT193667', 'PRO192', 'Summer2025', 'Final Exam', 0.5, 9.2, 'Passed');
-  insertGrade.run('CT193667', 'PRO192', 'Summer2025', 'Average', 1.0, 9.20, 'Passed');
 
   insertGrade.run('CT193667', 'MAD101', 'Summer2025', 'Midterm Exam', 0.4, 8.0, 'Passed');
   insertGrade.run('CT193667', 'MAD101', 'Summer2025', 'Final Exam', 0.6, 8.3, 'Passed');
-  insertGrade.run('CT193667', 'MAD101', 'Summer2025', 'Average', 1.0, 8.18, 'Passed');
+
+  insertGrade.run('CT193667', 'OSG202', 'Summer2025', 'Lab', 0.3, 7.0, 'Passed');
+  insertGrade.run('CT193667', 'OSG202', 'Summer2025', 'Midterm Exam', 0.2, 6.5, 'Passed');
+  insertGrade.run('CT193667', 'OSG202', 'Summer2025', 'Final Exam', 0.5, 6.8, 'Passed');
+
+  insertGrade.run('CT193667', 'VOV124', 'Summer2025', 'Final Exam', 1.0, 7.5, 'Passed');
 
   // Fall 2025
   insertGrade.run('CT193667', 'CSD201', 'Fall2025', 'Assignment', 0.3, 9.0, 'Passed');
   insertGrade.run('CT193667', 'CSD201', 'Fall2025', 'Practical Exam', 0.3, 8.5, 'Passed');
   insertGrade.run('CT193667', 'CSD201', 'Fall2025', 'Final Exam', 0.4, 8.8, 'Passed');
-  insertGrade.run('CT193667', 'CSD201', 'Fall2025', 'Average', 1.0, 8.77, 'Passed');
 
   insertGrade.run('CT193667', 'DBI202', 'Fall2025', 'Lab 1-6', 0.3, 9.0, 'Passed');
   insertGrade.run('CT193667', 'DBI202', 'Fall2025', 'Practical Exam', 0.3, 8.8, 'Passed');
   insertGrade.run('CT193667', 'DBI202', 'Fall2025', 'Final Exam', 0.4, 8.6, 'Passed');
-  insertGrade.run('CT193667', 'DBI202', 'Fall2025', 'Average', 1.0, 8.78, 'Passed');
+
+  insertGrade.run('CT193667', 'NWC203', 'Fall2025', 'Lab', 0.3, 8.0, 'Passed');
+  insertGrade.run('CT193667', 'NWC203', 'Fall2025', 'Progress Test', 0.2, 7.0, 'Passed');
+  insertGrade.run('CT193667', 'NWC203', 'Fall2025', 'Final Exam', 0.5, 7.4, 'Passed');
+
+  insertGrade.run('CT193667', 'VOV134', 'Fall2025', 'Final Exam', 1.0, 8.0, 'Passed');
 
   // Spring 2026
   insertGrade.run('CT193667', 'PRN211', 'Spring2026', 'Assignment', 0.3, 9.0, 'Passed');
   insertGrade.run('CT193667', 'PRN211', 'Spring2026', 'Practical Exam', 0.3, 8.5, 'Passed');
   insertGrade.run('CT193667', 'PRN211', 'Spring2026', 'Final Exam', 0.4, 8.5, 'Passed');
-  insertGrade.run('CT193667', 'PRN211', 'Spring2026', 'Average', 1.0, 8.65, 'Passed');
 
   insertGrade.run('CT193667', 'SWE201', 'Spring2026', 'Project Assignment', 0.4, 8.8, 'Passed');
   insertGrade.run('CT193667', 'SWE201', 'Spring2026', 'Final Exam', 0.6, 8.2, 'Passed');
-  insertGrade.run('CT193667', 'SWE201', 'Spring2026', 'Average', 1.0, 8.44, 'Passed');
+
+  insertGrade.run('CT193667', 'MAS291', 'Spring2026', 'Assignment', 0.3, 7.5, 'Passed');
+  insertGrade.run('CT193667', 'MAS291', 'Spring2026', 'Final Exam', 0.7, 7.2, 'Passed');
+
+  // First attempt at IAE301 failed; the student retakes it in Fall 2026.
+  insertGrade.run('CT193667', 'IAE301', 'Spring2026', 'Lab 1-5', 0.2, 5.0, 'Failed');
+  insertGrade.run('CT193667', 'IAE301', 'Spring2026', 'Midterm Exam', 0.3, 4.0, 'Failed');
+  insertGrade.run('CT193667', 'IAE301', 'Spring2026', 'Final Practical', 0.5, 3.0, 'Failed');
 
   // Fall 2026 (Current)
   insertGrade.run('CT193667', 'KRG301', 'Fall2026', 'Attendance', 0.1, 10.0, 'Passed');
   insertGrade.run('CT193667', 'KRG301', 'Fall2026', 'Midterm Exam', 0.3, 8.5, 'Passed');
   insertGrade.run('CT193667', 'KRG301', 'Fall2026', 'Assignment', 0.2, 9.0, 'Passed');
-  insertGrade.run('CT193667', 'KRG301', 'Fall2026', 'Final Exam', 0.4, 8.0, 'Passed');
-  insertGrade.run('CT193667', 'KRG301', 'Fall2026', 'Average', 1.0, 8.45, 'Passed');
+  insertGrade.run('CT193667', 'KRG301', 'Fall2026', 'Final Exam', 0.4, null, 'Pending'); // exam 15/11
+
+  insertGrade.run('CT193667', 'ITE302', 'Fall2026', 'Assignment', 0.3, 8.0, 'Passed');
+  insertGrade.run('CT193667', 'ITE302', 'Fall2026', 'Final Exam', 0.7, null, 'Pending'); // exam 20/11
+
+  insertGrade.run('CT193667', 'KOR411', 'Fall2026', 'Attendance', 0.1, 9.0, 'Passed');
+  insertGrade.run('CT193667', 'KOR411', 'Fall2026', 'Midterm Exam', 0.3, 7.5, 'Passed');
+  insertGrade.run('CT193667', 'KOR411', 'Fall2026', 'Final Exam', 0.6, null, 'Pending'); // exam 18/11
 
   insertGrade.run('CT193667', 'IAE301', 'Fall2026', 'Lab 1-5', 0.2, 9.5, 'Passed');
   insertGrade.run('CT193667', 'IAE301', 'Fall2026', 'Midterm Exam', 0.3, 8.0, 'Passed');
-  insertGrade.run('CT193667', 'IAE301', 'Fall2026', 'Final Practical', 0.5, 8.5, 'Passed');
-  insertGrade.run('CT193667', 'IAE301', 'Fall2026', 'Average', 1.0, 8.55, 'Passed');
+  insertGrade.run('CT193667', 'IAE301', 'Fall2026', 'Final Practical', 0.5, null, 'Pending'); // exam 25/11
 
   insertGrade.run('CT193667', 'SWP391', 'Fall2026', 'Iteration 1', 0.2, 8.5, 'Passed');
   insertGrade.run('CT193667', 'SWP391', 'Fall2026', 'Iteration 2', 0.2, 9.0, 'Passed');
   insertGrade.run('CT193667', 'SWP391', 'Fall2026', 'Iteration 3', 0.2, 8.5, 'Passed');
-  insertGrade.run('CT193667', 'SWP391', 'Fall2026', 'Final Defense', 0.4, 9.0, 'Passed');
-  insertGrade.run('CT193667', 'SWP391', 'Fall2026', 'Average', 1.0, 8.8, 'Passed');
+  insertGrade.run('CT193667', 'SWP391', 'Fall2026', 'Final Defense', 0.4, null, 'Pending'); // defense 05/12
 
   // SE180123 Grades
   insertGrade.run('SE180123', 'PRN211', 'Fall2025', 'Assignment', 0.3, 9.0, 'Passed');
   insertGrade.run('SE180123', 'PRN211', 'Fall2025', 'Practical Exam', 0.3, 8.5, 'Passed');
   insertGrade.run('SE180123', 'PRN211', 'Fall2025', 'Final Exam', 0.4, 8.8, 'Passed');
-  insertGrade.run('SE180123', 'PRN211', 'Fall2025', 'Average', 1.0, 8.77, 'Passed');
 
   insertGrade.run('SE180123', 'SWE201', 'Fall2025', 'Assignment', 0.4, 9.0, 'Passed');
   insertGrade.run('SE180123', 'SWE201', 'Fall2025', 'Final Exam', 0.6, 9.2, 'Passed');
-  insertGrade.run('SE180123', 'SWE201', 'Fall2025', 'Average', 1.0, 9.12, 'Passed');
 
   insertGrade.run('SE180123', 'SWP391', 'Spring2026', 'Defense', 1.0, 9.3, 'Passed');
-  insertGrade.run('SE180123', 'SWP391', 'Spring2026', 'Average', 1.0, 9.3, 'Passed');
 
   insertGrade.run('SE180123', 'ITE302', 'Spring2026', 'Final Exam', 1.0, 8.6, 'Passed');
-  insertGrade.run('SE180123', 'ITE302', 'Spring2026', 'Average', 1.0, 8.6, 'Passed');
 
-  insertGrade.run('SE180123', 'OJT401', 'Fall2026', 'Evaluation', 1.0, 9.5, 'Passed');
-  insertGrade.run('SE180123', 'OJT401', 'Fall2026', 'Average', 1.0, 9.5, 'Passed');
+  insertGrade.run('SE180123', 'OJT401', 'Fall2026', 'Mentor Evaluation', 0.5, 9.5, 'Passed');
+  insertGrade.run('SE180123', 'OJT401', 'Fall2026', 'Final OJT Report', 0.5, null, 'Pending'); // report 15/12
 
   // 10. Attendance Summary for ALL semesters
   const insertAtt = db.prepare(`
@@ -613,10 +672,11 @@ function seedAll() {
   insertAtt.run('CT193667', 'PRN211', 'Spring2026', 30, 0, 0.0, 'Passed');
   insertAtt.run('CT193667', 'MAS291', 'Spring2026', 30, 1, 3.33, 'Passed');
   insertAtt.run('CT193667', 'SWE201', 'Spring2026', 30, 0, 0.0, 'Passed');
+  insertAtt.run('CT193667', 'IAE301', 'Spring2026', 30, 2, 6.67, 'Passed');
   // Fall 2026 (Current)
   insertAtt.run('CT193667', 'KRG301', 'Fall2026', 30, 1, 3.33, 'Passed');
   insertAtt.run('CT193667', 'KOR411', 'Fall2026', 30, 2, 6.67, 'Passed');
-  insertAtt.run('CT193667', 'VOV114', 'Fall2026', 20, 0, 0.0, 'Passed');
+  insertAtt.run('CT193667', 'ITE302', 'Fall2026', 30, 1, 3.33, 'Passed');
   insertAtt.run('CT193667', 'IAE301', 'Fall2026', 30, 1, 3.33, 'Passed');
   insertAtt.run('CT193667', 'SWP391', 'Fall2026', 30, 0, 0.0, 'Passed');
 
@@ -648,7 +708,7 @@ function seedAll() {
     INSERT INTO notifications (user_id, title, body, link_url, is_read, created_at)
     VALUES (?, ?, ?, ?, ?, ?)
   `);
-  insertNotif.run('CT193667', 'Lịch thi mới', 'Bạn có lịch thi môn VOV114 vào ngày 04/11/2026 lúc 09:15.', '/ExamSchedule', 0, '2026-11-03 10:00:00');
+  insertNotif.run('CT193667', 'Lịch thi mới', 'Bạn có lịch thi môn KRG301 vào ngày 15/11/2026 lúc 07:30.', '/ExamSchedule', 0, '2026-11-03 10:00:00');
   insertNotif.run('CT193667', 'Điểm số cập nhật', 'Điểm thi giữa kỳ môn KRG301 đã được công bố: 8.5 điểm.', '/Report/Grade', 0, '2026-11-02 15:30:00');
   insertNotif.run('CT193667', 'Nhắc nhở học tập', 'Ngày mai bạn có 2 ca học lúc Slot 1 và Slot 2.', '/WeeklyTimetable', 1, '2026-11-01 18:00:00');
 
@@ -689,12 +749,38 @@ function seedAll() {
     ['BIT_IA_19A_AS', 5, 'KRG301', 'Korean General 3', 3, 'None'],
     ['BIT_IA_19A_AS', 5, 'KOR411', 'Korean for Communication 4', 3, 'KRG301'],
     ['BIT_IA_19A_AS', 5, 'ITE302', 'Ethics in IT', 3, 'None'],
-    ['BIT_IA_19A_AS', 6, 'OJT401', 'On-the-Job Training (OJT)', 10, 'Hoàn thành 90 tín chỉ'],
+    ['BIT_IA_19A_AS', 6, 'OJT401', 'On-the-Job Training (OJT)', 10, 'Hoàn thành kỳ 1–5'],
     ['BIT_IA_19A_AS', 7, 'CRY301', 'Cryptography and Network Security', 3, 'IAE301'],
     ['BIT_IA_19A_AS', 7, 'FOR301', 'Digital Forensics', 3, 'IAE301'],
     ['BIT_IA_19A_AS', 8, 'PEN301', 'Penetration Testing and Ethical Hacking', 3, 'CRY301'],
     ['BIT_IA_19A_AS', 8, 'MAL301', 'Malware Analysis and Reverse Engineering', 3, 'IAE301'],
-    ['BIT_IA_19A_AS', 9, 'SEP490', 'Graduation Thesis / Capstone Project', 10, 'Hoàn thành OJT & 120 tín chỉ']
+    ['BIT_IA_19A_AS', 9, 'SEP490', 'Graduation Thesis / Capstone Project', 10, 'Hoàn thành OJT & 120 tín chỉ'],
+
+    // Software Engineering (K18)
+    ['BIT_SE_18A_AS', 1, 'PRF192', 'Programming Fundamentals', 3, 'None'],
+    ['BIT_SE_18A_AS', 1, 'MAE101', 'Mathematics for Engineering', 3, 'None'],
+    ['BIT_SE_18A_AS', 1, 'CSI104', 'Introduction to Computer Science', 3, 'None'],
+    ['BIT_SE_18A_AS', 1, 'VOV114', 'Vovinam 1', 2, 'None'],
+    ['BIT_SE_18A_AS', 2, 'PRO192', 'Object-Oriented Programming', 3, 'PRF192'],
+    ['BIT_SE_18A_AS', 2, 'MAD101', 'Discrete Mathematics', 3, 'MAE101'],
+    ['BIT_SE_18A_AS', 2, 'OSG202', 'Operating Systems', 3, 'CSI104'],
+    ['BIT_SE_18A_AS', 2, 'VOV124', 'Vovinam 2', 2, 'VOV114'],
+    ['BIT_SE_18A_AS', 3, 'CSD201', 'Data Structures and Algorithms', 3, 'PRO192'],
+    ['BIT_SE_18A_AS', 3, 'DBI202', 'Introduction to Databases', 3, 'None'],
+    ['BIT_SE_18A_AS', 3, 'NWC203', 'Computer Networking', 3, 'None'],
+    ['BIT_SE_18A_AS', 3, 'VOV134', 'Vovinam 3', 2, 'VOV124'],
+    ['BIT_SE_18A_AS', 4, 'PRN211', 'Basic Cross-Platform Programming with .NET', 3, 'PRO192'],
+    ['BIT_SE_18A_AS', 4, 'SWE201', 'Introduction to Software Engineering', 3, 'PRO192'],
+    ['BIT_SE_18A_AS', 4, 'MAS291', 'Statistics and Probability', 3, 'MAE101'],
+    ['BIT_SE_18A_AS', 5, 'SWP391', 'Software Development Project', 3, 'SWE201, PRN211'],
+    ['BIT_SE_18A_AS', 5, 'ITE302', 'Ethics in IT', 3, 'None'],
+    ['BIT_SE_18A_AS', 5, 'PRJ301', 'Java Web Application Development', 3, 'PRO192, DBI202'],
+    ['BIT_SE_18A_AS', 6, 'OJT401', 'On-the-Job Training (OJT)', 10, 'Hoàn thành kỳ 1–5'],
+    ['BIT_SE_18A_AS', 7, 'SWT301', 'Software Testing', 3, 'SWE201'],
+    ['BIT_SE_18A_AS', 7, 'SWD392', 'Software Architecture and Design', 3, 'SWE201'],
+    ['BIT_SE_18A_AS', 8, 'PRM392', 'Mobile Programming', 3, 'PRO192'],
+    ['BIT_SE_18A_AS', 8, 'EXE201', 'Experiential Entrepreneurship 2', 3, 'None'],
+    ['BIT_SE_18A_AS', 9, 'SEP490', 'Graduation Thesis / Capstone Project', 10, 'Hoàn thành OJT & 120 tín chỉ']
   ];
   currData.forEach(row => insertCurriculum.run(...row));
 
@@ -788,6 +874,16 @@ module.exports = {
       WHERE users.username = ? OR users.email = ? OR users.roll_number = ? OR students.personal_email = ?
     `).get(ident, ident, ident, ident);
   },
+  getUserByUsername: (username) => db.prepare('SELECT * FROM users WHERE username = ?').get(username),
+  // Stores a new password hash and invalidates every existing session of the user.
+  updatePassword: (userId, passwordHash) => {
+    db.prepare('UPDATE users SET password = ?, session_version = session_version + 1 WHERE id = ?').run(passwordHash, userId);
+    return db.prepare('SELECT session_version FROM users WHERE id = ?').get(userId).session_version;
+  },
+  bumpSessionVersion: (userId) => {
+    db.prepare('UPDATE users SET session_version = session_version + 1 WHERE id = ?').run(userId);
+    return db.prepare('SELECT session_version FROM users WHERE id = ?').get(userId).session_version;
+  },
   getUserByRoll: (roll) => {
     return db.prepare('SELECT * FROM users WHERE roll_number = ?').get(roll);
   },
@@ -833,22 +929,29 @@ module.exports = {
       WHERE a.student_roll = ? AND a.semester_code = ?
     `).all(roll, semester);
   },
+  // Grade components of one semester. Subject scores are computed in grading.js,
+  // so any stored "Average" rows are informational only.
   getGrades: (roll, semester = 'Fall2026') => {
     return db.prepare(`
-      SELECT g.*, s.name as subject_name, s.credits
+      SELECT g.*, s.name as subject_name, s.credits, s.department,
+             sem.name as semester_name, sem.start_date as semester_start
       FROM grades g
       JOIN subjects s ON g.subject_code = s.code
-      WHERE g.student_roll = ? AND g.semester_code = ?
+      JOIN semesters sem ON g.semester_code = sem.code
+      WHERE g.student_roll = ? AND g.semester_code = ? AND g.component_name <> 'Average'
+      ORDER BY g.subject_code ASC, g.id ASC
     `).all(roll, semester);
   },
+  // Every grade component of a student, oldest semester first.
   getAllGradesForTranscript: (roll) => {
     return db.prepare(`
-      SELECT g.semester_code, sem.name as semester_name, g.subject_code, sub.name as subject_name, sub.credits, g.value as final_grade, g.status
+      SELECT g.*, sub.name as subject_name, sub.credits, sub.department,
+             sem.name as semester_name, sem.start_date as semester_start
       FROM grades g
       JOIN subjects sub ON g.subject_code = sub.code
       JOIN semesters sem ON g.semester_code = sem.code
-      WHERE g.student_roll = ? AND g.component_name = 'Average'
-      ORDER BY sem.start_date ASC, g.subject_code ASC
+      WHERE g.student_roll = ? AND g.component_name <> 'Average'
+      ORDER BY sem.start_date ASC, g.subject_code ASC, g.id ASC
     `).all(roll);
   },
   getNews: (categoryId = null) => {
@@ -858,16 +961,17 @@ module.exports = {
         FROM news n
         JOIN news_categories c ON n.category_id = c.id
         WHERE n.category_id = ?
-        ORDER BY n.published_at DESC
+        ORDER BY ${NEWS_DATE_SORT} DESC
       `).all(categoryId);
     }
     return db.prepare(`
       SELECT n.*, c.name as category_name
       FROM news n
       JOIN news_categories c ON n.category_id = c.id
-      ORDER BY n.published_at DESC
+      ORDER BY ${NEWS_DATE_SORT} DESC
     `).all();
   },
+  getNewsCategories: () => db.prepare('SELECT * FROM news_categories ORDER BY name').all(),
   getNewsDetail: (id) => {
     return db.prepare(`
       SELECT n.*, c.name as category_name
@@ -976,5 +1080,118 @@ module.exports = {
       INSERT INTO startup_groups (student_roll, project_name, field, member_count, description, status, created_at)
       VALUES (?, ?, ?, ?, ?, 'Chờ xét duyệt', ?)
     `).run(roll, projectName, field, memberCount, desc, now);
+  },
+
+  // ---------- Staff: notifications ----------
+  addNotification: (roll, title, body, linkUrl) => {
+    const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
+    return db.prepare('INSERT INTO notifications (user_id, title, body, link_url, is_read, created_at) VALUES (?, ?, ?, ?, 0, ?)')
+      .run(roll, title, body, linkUrl, now);
+  },
+
+  // ---------- Staff: request approval ----------
+  // Table and column names come from REQUEST_TYPES (fixed), never from user input.
+  REQUEST_TYPES,
+  listRequests: (type) => {
+    const cfg = REQUEST_TYPES[type];
+    if (!cfg) return [];
+    const pending = cfg.pending.map(() => '?').join(', ');
+    return db.prepare(`
+      SELECT r.*, s.full_name AS student_name, (r.status IN (${pending})) AS is_pending
+      FROM ${cfg.table} r
+      LEFT JOIN students s ON s.roll_number = r.student_roll
+      ORDER BY is_pending DESC, r.id DESC
+    `).all(...cfg.pending);
+  },
+  countPendingRequests: () => {
+    const counts = {};
+    for (const [type, cfg] of Object.entries(REQUEST_TYPES)) {
+      const pending = cfg.pending.map(() => '?').join(', ');
+      counts[type] = db.prepare(`SELECT COUNT(*) AS n FROM ${cfg.table} WHERE status IN (${pending})`).get(...cfg.pending).n;
+    }
+    return counts;
+  },
+  // Sets the final status of a pending request; returns the row, or null if it was not pending.
+  decideRequest: (type, id, approve) => {
+    const cfg = REQUEST_TYPES[type];
+    if (!cfg) return null;
+    const pending = cfg.pending.map(() => '?').join(', ');
+    const status = approve ? cfg.approved : cfg.rejected;
+    const res = db.prepare(`UPDATE ${cfg.table} SET status = ? WHERE id = ? AND status IN (${pending})`).run(status, id, ...cfg.pending);
+    if (res.changes === 0) return null;
+    return db.prepare(`SELECT * FROM ${cfg.table} WHERE id = ?`).get(id);
+  },
+
+  // ---------- Staff: grade entry ----------
+  getClassesForLecturer: (lecturerName) => db.prepare(`
+    SELECT c.*, s.name AS subject_name, sem.name AS semester_name
+    FROM classes c JOIN subjects s ON s.code = c.subject_code JOIN semesters sem ON sem.code = c.semester_code
+    WHERE c.lecturer_name = ? ORDER BY sem.start_date DESC, c.class_code
+  `).all(lecturerName),
+  getAllClasses: () => db.prepare(`
+    SELECT c.*, s.name AS subject_name, sem.name AS semester_name
+    FROM classes c JOIN subjects s ON s.code = c.subject_code JOIN semesters sem ON sem.code = c.semester_code
+    ORDER BY sem.start_date DESC, c.class_code
+  `).all(),
+  getClass: (id) => db.prepare(`
+    SELECT c.*, s.name AS subject_name, sem.name AS semester_name
+    FROM classes c JOIN subjects s ON s.code = c.subject_code JOIN semesters sem ON sem.code = c.semester_code
+    WHERE c.id = ?
+  `).get(id),
+  // Students who have this class in their timetable.
+  getClassStudents: (classId) => db.prepare(`
+    SELECT DISTINCT sch.student_roll AS roll_number, st.full_name
+    FROM schedules sch JOIN students st ON st.roll_number = sch.student_roll
+    WHERE sch.class_id = ? ORDER BY sch.student_roll
+  `).all(classId),
+  getGradeComponents: (roll, subjectCode, semesterCode) => db.prepare(`
+    SELECT id, component_name, weight, value FROM grades
+    WHERE student_roll = ? AND subject_code = ? AND semester_code = ? AND component_name <> 'Average'
+    ORDER BY id
+  `).all(roll, subjectCode, semesterCode),
+  // ---------- Staff: attendance ----------
+  getClassSessions: (classId) => db.prepare(`
+    SELECT sch.id, sch.student_roll, st.full_name, sch.study_date, sch.slot, sch.room, sch.status
+    FROM schedules sch JOIN students st ON st.roll_number = sch.student_roll
+    WHERE sch.class_id = ? ORDER BY sch.study_date, sch.slot, sch.student_roll
+  `).all(classId),
+  // changes: [{ id, student_roll, from, to }] for sessions of `cls`. Keeps attendance_summary
+  // (absent_slots / absent_percentage / status) in step with the per-session statuses.
+  markAttendance: (cls, changes) => {
+    const ABSENT_LIMIT = 20; // % of sessions; above this the student is barred from the exam
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      const totalSessions = db.prepare('SELECT COUNT(DISTINCT study_date || slot) AS n FROM schedules WHERE class_id = ?').get(cls.id).n || 1;
+      for (const ch of changes) {
+        db.prepare('UPDATE schedules SET status = ? WHERE id = ? AND class_id = ?').run(ch.to, ch.id, cls.id);
+        const delta = (ch.to === 'Absent' ? 1 : 0) - (ch.from === 'Absent' ? 1 : 0);
+        let row = db.prepare('SELECT * FROM attendance_summary WHERE student_roll = ? AND subject_code = ? AND semester_code = ?')
+          .get(ch.student_roll, cls.subject_code, cls.semester_code);
+        if (!row) {
+          db.prepare(`INSERT INTO attendance_summary (student_roll, subject_code, semester_code, total_slots, absent_slots, absent_percentage, status)
+                      VALUES (?, ?, ?, ?, 0, 0, 'Passed')`).run(ch.student_roll, cls.subject_code, cls.semester_code, totalSessions);
+          row = db.prepare('SELECT * FROM attendance_summary WHERE student_roll = ? AND subject_code = ? AND semester_code = ?')
+            .get(ch.student_roll, cls.subject_code, cls.semester_code);
+        }
+        if (delta === 0) continue;
+        const absent = Math.max(0, row.absent_slots + delta);
+        const pct = Math.round((absent / row.total_slots) * 10000) / 100;
+        db.prepare('UPDATE attendance_summary SET absent_slots = ?, absent_percentage = ?, status = ? WHERE id = ?')
+          .run(absent, pct, pct > ABSENT_LIMIT ? 'Failed' : 'Passed', row.id);
+      }
+      db.exec('COMMIT');
+    } catch (err) {
+      try { db.exec('ROLLBACK'); } catch { /* already rolled back */ }
+      throw err;
+    }
+  },
+
+  // Updates one existing component; returns true when a row changed.
+  setGradeComponent: (gradeId, roll, subjectCode, semesterCode, value) => {
+    const res = db.prepare(`
+      UPDATE grades SET value = ?, status = ?
+      WHERE id = ? AND student_roll = ? AND subject_code = ? AND semester_code = ? AND component_name <> 'Average'
+    `).run(value, value === null ? 'Pending' : 'Graded', gradeId, roll, subjectCode, semesterCode);
+    return res.changes > 0;
   }
 };

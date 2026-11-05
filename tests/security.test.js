@@ -105,6 +105,14 @@ test('security headers are set and x-powered-by is hidden', async () => {
   assert.equal(res.headers['x-powered-by'], undefined);
 });
 
+test('Content-Security-Policy forbids inline and third-party script', async () => {
+  const csp = (await server.get('/Auth/Login')).headers['content-security-policy'] || '';
+  assert.match(csp, /script-src 'self'(;|$)/);
+  assert.match(csp, /object-src 'none'/);
+  assert.match(csp, /frame-ancestors 'none'/);
+  assert.match(csp, /form-action 'self'/);
+});
+
 test('unknown route returns 404', async () => {
   const res = await server.get('/does-not-exist', { Cookie: cookie });
   assert.equal(res.statusCode, 404);

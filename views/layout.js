@@ -3,7 +3,9 @@ const path = require('path');
 const i18n = require('../i18n');
 
 // NOTE: `title` and `student` must already be HTML-escaped by the caller (see renderPage in server.js).
-function renderLayout({ title, currentPath = '/', content = '', student, lang = 'vi', demoMode = false }) {
+// staffMenu: sidebar HTML for staff accounts (replaces the student menu and hides wallet/profile items).
+function renderLayout({ title, currentPath = '/', content = '', student, lang = 'vi', demoMode = false, staffMenu = '' }) {
+  const isStaff = Boolean(staffMenu);
   const dict = i18n.getDictionary(lang);
   const isEn = lang === 'en';
   const roll = student ? student.roll_number : 'CT193667';
@@ -350,52 +352,7 @@ function renderLayout({ title, currentPath = '/', content = '', student, lang = 
       .leftside-menu .logo-lg img { height: 44px !important; width: auto !important; max-width: 220px !important; }
       .logo-topbar .logo-sm img, .leftside-menu .logo-sm img { height: 34px !important; width: 34px !important; }
     </style>
-    <script>
-      (function() {
-        function applyTheme(theme) {
-          document.documentElement.setAttribute('data-bs-theme', theme);
-          document.documentElement.setAttribute('data-topbar-color', theme);
-          document.documentElement.setAttribute('data-menu-color', theme);
-          localStorage.setItem('ctl_theme', theme);
-          try {
-            sessionStorage.setItem('__CONFIG__', JSON.stringify({
-              theme: theme,
-              nav: 'vertical',
-              layout: { mode: 'fluid', position: 'fixed' },
-              topbar: { color: theme },
-              menu: { color: theme },
-              sidenav: { size: 'default', user: true }
-            }));
-            if (window.config) {
-              window.config.theme = theme;
-              if (window.config.topbar) window.config.topbar.color = theme;
-              if (window.config.menu) window.config.menu.color = theme;
-            }
-          } catch(e) {}
-          const icon = document.querySelector('#light-dark-mode i');
-          if (icon) {
-            icon.className = theme === 'dark' ? 'ri-sun-line fs-22' : 'ri-moon-line fs-22';
-          }
-        }
-        const savedTheme = localStorage.getItem('ctl_theme') || 'dark';
-        applyTheme(savedTheme);
-
-        window.addEventListener('DOMContentLoaded', function() {
-          const curr = localStorage.getItem('ctl_theme') || 'dark';
-          applyTheme(curr);
-          const btn = document.getElementById('light-dark-mode');
-          if (btn) {
-            btn.addEventListener('click', function(e) {
-              e.preventDefault();
-              e.stopImmediatePropagation();
-              const c = document.documentElement.getAttribute('data-bs-theme');
-              const next = c === 'dark' ? 'light' : 'dark';
-              applyTheme(next);
-            }, true);
-          }
-        });
-      })();
-</script>
+    <script src="/js/theme.js"></script>
 </head>
 <body>
     <div id="preloader" style="display: none;">
@@ -473,14 +430,14 @@ function renderLayout({ title, currentPath = '/', content = '', student, lang = 
                                         <h6 class="m-0 fs-16 fw-semibold">${dict.notifications}</h6>
                                     </div>
                                     <div class="col-auto">
-                                        <a href="javascript: void(0);" class="text-dark text-decoration-underline">
+                                        <a href="#" role="button" data-prevent-default class="text-dark text-decoration-underline">
                                             <small>${dict.markAllRead}</small>
                                         </a>
                                     </div>
                                 </div>
                             </div>
                             <div style="max-height: 250px;" data-simplebar>
-                                <a href="javascript:void(0);" class="dropdown-item p-0 notify-item unread-noti card m-0 shadow-none">
+                                <a href="#" role="button" data-prevent-default class="dropdown-item p-0 notify-item unread-noti card m-0 shadow-none">
                                     <div class="card-body">
                                         <div class="d-flex align-items-center">
                                             <div class="flex-shrink-0">
@@ -523,15 +480,19 @@ function renderLayout({ title, currentPath = '/', content = '', student, lang = 
                         <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated profile-dropdown">
                             <div class="dropdown-header noti-title">
                                 <h6 class="text-overflow m-0">${name}</h6>
-                                <small class="text-muted">${roll} | ${dict.balance}: ${balance} VND</small>
+                                <small class="text-muted">${roll}${isStaff ? '' : ` | ${dict.balance}: ${balance} VND`}</small>
                             </div>
-                            <a class="dropdown-item" href="/Account">
+${isStaff ? '' : `                            <a class="dropdown-item" href="/Account">
                                 <i class="ri-account-circle-fill align-middle me-1"></i>
                                 <span>${dict.myAccount}</span>
                             </a>
                             <a class="dropdown-item" href="/StudentProfile">
                                 <i class="ri-user-settings-line align-middle me-1"></i>
                                 <span>${isEn ? 'Update Profile' : 'Cập nhật hồ sơ'}</span>
+                            </a>`}
+                            <a class="dropdown-item" href="/Auth/ChangePassword">
+                                <i class="ri-lock-password-line align-middle me-1"></i>
+                                <span>${isEn ? 'Change Password' : 'Đổi mật khẩu'}</span>
                             </a>
                             ${demoMode ? `<div class="dropdown-divider my-1"></div>
                             <div class="dropdown-header noti-title py-1">
@@ -563,6 +524,7 @@ function renderLayout({ title, currentPath = '/', content = '', student, lang = 
 
             <div class="cap-sidebar__scroll fap-sidebar__scroll" id="leftside-menu-container" data-simplebar>
                 <ul class="side-nav">
+${staffMenu || `
                     <!-- ==================== CATEGORY 1: HỌC TẬP ==================== -->
                     <li class="side-nav-title mt-1">${isEn ? 'Academics' : 'Học tập'}</li>
 
@@ -851,9 +813,16 @@ function renderLayout({ title, currentPath = '/', content = '', student, lang = 
                                         <span>${isEn ? 'Update Profile' : 'Cập nhật hồ sơ'}</span>
                                     </a>
                                 </li>
+                                <li class="side-nav-item ${currentPath === '/Auth/ChangePassword' ? 'menuitem-active' : ''}">
+                                    <a href="/Auth/ChangePassword" class="side-nav-link ${currentPath === '/Auth/ChangePassword' ? 'active' : ''}">
+                                        <i class="ri-lock-password-line"></i>
+                                        <span>${isEn ? 'Change Password' : 'Đổi mật khẩu'}</span>
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                     </li>
+`}
                 </ul>
             </div>
         </aside>
@@ -909,6 +878,7 @@ function renderLayout({ title, currentPath = '/', content = '', student, lang = 
     <script src="/js/base.js"></script>
     <script src="/js/sidebar-state.js"></script>
     <script src="/js/notification-bell.js"></script>
+    <script src="/js/cap-ui.js"></script>
 </body>
 </html>`;
 }

@@ -1,5 +1,6 @@
 const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
+const { hashPassword, isHashed } = require('./security');
 
 const dbPath = path.join(__dirname, 'cap.db');
 const db = new DatabaseSync(dbPath);
@@ -256,6 +257,16 @@ function initDatabase() {
   `);
 
   seedAll();
+  migratePlaintextPasswords();
+}
+
+// Hash any password still stored in plaintext (seed data or databases created before hashing).
+function migratePlaintextPasswords() {
+  const rows = db.prepare('SELECT id, password FROM users').all();
+  const update = db.prepare('UPDATE users SET password = ? WHERE id = ?');
+  for (const row of rows) {
+    if (!isHashed(row.password)) update.run(hashPassword(row.password), row.id);
+  }
 }
 
 function seedAll() {
@@ -870,7 +881,7 @@ module.exports = {
     const res = db.prepare('SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0').get(roll);
     return res ? res.count : 0;
   },
-  markNotifRead: (id) => db.prepare('UPDATE notifications SET is_read = 1 WHERE id = ?').run(id),
+  markNotifRead: (id, roll) => db.prepare('UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?').run(id, roll),
   markAllNotifRead: (roll) => db.prepare('UPDATE notifications SET is_read = 1 WHERE user_id = ?').run(roll),
   getApplications: (roll) => db.prepare('SELECT * FROM applications WHERE student_roll = ? ORDER BY id DESC').all(roll),
   createApplication: (roll, type, reason) => {
@@ -884,32 +895,51 @@ module.exports = {
   getCertificates: (roll) => db.prepare('SELECT * FROM certificates WHERE student_roll = ? ORDER BY issue_date DESC').all(roll),
   getTransactions: (roll) => db.prepare('SELECT * FROM transactions WHERE student_roll = ? ORDER BY id DESC').all(roll),
   addTransaction: (roll, amount, type, desc, method) => {
-    const code = 'TRX-' + Date.now().toString(36).toUpperCase();
+    const code = 'TRX-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
     const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
-    db.prepare(`
-      INSERT INTO transactions (student_roll, trans_code, amount, trans_type, description, payment_method, status, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, 'Thành công', ?)
-    `).run(roll, code, amount, type, desc, method, now);
-    db.prepare('UPDATE students SET balance = balance + ? WHERE roll_number = ?').run(amount, roll);
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      db.prepare(`
+        INSERT INTO transactions (student_roll, trans_code, amount, trans_type, description, payment_method, status, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, 'Thành công', ?)
+      `).run(roll, code, amount, type, desc, method, now);
+      db.prepare('UPDATE students SET balance = balance + ? WHERE roll_number = ?').run(amount, roll);
+      db.exec('COMMIT');
+    } catch (err) {
+      try { db.exec('ROLLBACK'); } catch { /* already rolled back */ }
+      throw err;
+    }
     return code;
   },
   getShoppingCart: (roll) => db.prepare('SELECT * FROM shopping_cart WHERE student_roll = ? ORDER BY id DESC').all(roll),
   payCartItem: (roll, itemId) => {
-    const item = db.prepare('SELECT * FROM shopping_cart WHERE id = ? AND student_roll = ?').get(itemId, roll);
-    if (!item) return { success: false, error: 'Không tìm thấy khoản phí' };
-    const student = db.prepare('SELECT balance FROM students WHERE roll_number = ?').get(roll);
-    if (student.balance < item.amount) {
-      return { success: false, error: 'Số dư ví không đủ, vui lòng nạp thêm tiền!' };
+    // All steps run in one transaction; the conditional UPDATEs stop double payment
+    // of the same item and overdrawing the wallet under concurrent requests.
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      const item = db.prepare("SELECT * FROM shopping_cart WHERE id = ? AND student_roll = ? AND status = 'Chưa thanh toán'").get(itemId, roll);
+      if (!item) {
+        db.exec('ROLLBACK');
+        return { success: false, code: 'not_found', error: 'Không tìm thấy khoản phí hoặc khoản phí đã được thanh toán' };
+      }
+      const debit = db.prepare('UPDATE students SET balance = balance - ? WHERE roll_number = ? AND balance >= ?').run(item.amount, roll, item.amount);
+      if (debit.changes === 0) {
+        db.exec('ROLLBACK');
+        return { success: false, code: 'insufficient_balance', error: 'Số dư ví không đủ, vui lòng nạp thêm tiền!' };
+      }
+      db.prepare("UPDATE shopping_cart SET status = 'Đã thanh toán' WHERE id = ?").run(item.id);
+      const code = 'TRX-PAY-' + Date.now().toString(36).toUpperCase() + '-' + item.id;
+      const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
+      db.prepare(`
+        INSERT INTO transactions (student_roll, trans_code, amount, trans_type, description, payment_method, status, created_at)
+        VALUES (?, ?, ?, 'Thanh toán phí', ?, 'Số dư ví CAP', 'Thành công', ?)
+      `).run(roll, code, item.amount, 'Thanh toán: ' + item.fee_title, now);
+      db.exec('COMMIT');
+      return { success: true };
+    } catch (err) {
+      try { db.exec('ROLLBACK'); } catch { /* already rolled back */ }
+      throw err;
     }
-    db.prepare('UPDATE students SET balance = balance - ? WHERE roll_number = ?').run(item.amount, roll);
-    db.prepare("UPDATE shopping_cart SET status = 'Đã thanh toán' WHERE id = ?").run(itemId);
-    const code = 'TRX-PAY-' + Date.now().toString(36).toUpperCase();
-    const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
-    db.prepare(`
-      INSERT INTO transactions (student_roll, trans_code, amount, trans_type, description, payment_method, status, created_at)
-      VALUES (?, ?, ?, 'Thanh toán phí', ?, 'Số dư ví CAP', 'Thành công', ?)
-    `).run(roll, code, item.amount, 'Thanh toán: ' + item.fee_title, now);
-    return { success: true };
   },
   getWishlist: (roll) => db.prepare('SELECT * FROM wishlist WHERE student_roll = ? ORDER BY id DESC').all(roll),
   addWishlist: (roll, subjectCode, semesterCode, slot, note) => {

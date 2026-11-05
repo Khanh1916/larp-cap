@@ -21,8 +21,23 @@ function request(options, postData = null) {
   });
 }
 
+// Extracts "cap_user=<signed value>" from a login response.
+function sessionCookie(res) {
+  const raw = (res.headers['set-cookie'] || []).find(c => c.startsWith('cap_user='));
+  return raw ? raw.split(';')[0] : '';
+}
+
+async function login(username, password, port = Number(process.env.PORT) || 3000) {
+  const body = `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+  const res = await request({
+    hostname: 'localhost', port, path: '/Auth/Login', method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body) }
+  }, body);
+  return sessionCookie(res);
+}
+
 async function runTests() {
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
   console.log('--- STARTING COMPREHENSIVE AUTH & MULTI-SEMESTER AUDIT ---');
 
   let passed = 0;
@@ -92,9 +107,9 @@ async function runTests() {
     }
   }, goodLoginData);
   const setCookie = res5.headers['set-cookie'] ? res5.headers['set-cookie'].join(';') : '';
-  assert(res5.statusCode === 302 && setCookie.includes('fap_user=CT193667'), 'Valid login sets fap_user cookie and redirects');
+  assert(res5.statusCode === 302 && /cap_user=s%3ACT193667\.[^;]+/.test(setCookie) && /HttpOnly/i.test(setCookie), 'Valid login sets a signed, httpOnly cap_user cookie and redirects');
 
-  const heCookie = 'fap_user=CT193667';
+  const heCookie = sessionCookie(res5);
 
   // 6. Access / with CT193667 cookie
   const res6 = await request({
@@ -167,7 +182,7 @@ async function runTests() {
   assert(resTrans.statusCode === 200 && resTrans.body.includes('Bảng điểm chi tiết toàn khóa học') && resTrans.body.includes('PRF192') && resTrans.body.includes('SWP391'), 'Cumulative Transcript calculates and lists all passed subjects');
 
   // 12. Switch to Student 2 (SE180123 - Trần Hoàng Long)
-  const seCookie = 'fap_user=SE180123';
+  const seCookie = await login('SE180123', '123456');
   const resSE = await request({
     hostname: 'localhost',
     port: PORT,
@@ -212,9 +227,63 @@ async function runTests() {
     port: PORT,
     path: '/',
     method: 'GET',
-    headers: { 'Cookie': 'cap_user=CT193667; cap_lang=en' }
+    headers: { 'Cookie': heCookie + '; cap_lang=en' }
   });
   assert(resEnHome.statusCode === 200 && resEnHome.body.includes('Student Information') && resEnHome.body.includes('Version: 1.0.0.0'), 'English version renders translated student information and Version: 1.0.0.0');
+
+  // ---------------- SECURITY REGRESSION TESTS ----------------
+  const post = (path, body, headers = {}) => request({
+    hostname: 'localhost', port: PORT, path, method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(body), ...headers }
+  }, body);
+  const get = (path, cookie) => request({ hostname: 'localhost', port: PORT, path, method: 'GET', headers: cookie ? { Cookie: cookie } : {} });
+
+  // S1. Forged / unsigned cookies are rejected
+  const resForged = await get('/Account', 'cap_user=SE180123');
+  assert(resForged.statusCode === 302 && resForged.headers.location.includes('/Auth/Login'), 'Unsigned cap_user cookie is rejected');
+  const resLegacy = await get('/Account', 'fap_user=SE180123');
+  assert(resLegacy.statusCode === 302, 'Legacy fap_user cookie no longer authenticates');
+
+  // S2. Open redirect blocked after login
+  const resEvil = await post('/Auth/Login', 'username=CT193667&password=123456&returnUrl=' + encodeURIComponent('https://evil.example'));
+  assert(resEvil.statusCode === 302 && resEvil.headers.location === '/', 'External returnUrl is replaced by /');
+  const resEvil2 = await post('/Auth/Login', 'username=CT193667&password=123456&returnUrl=' + encodeURIComponent('//evil.example'));
+  assert(resEvil2.headers.location === '/', 'Protocol-relative returnUrl is replaced by /');
+
+  // S3. Reflected XSS on the login page is escaped
+  const resRefl = await get('/Auth/Login?returnUrl=' + encodeURIComponent('/"><script>alert(1)</script>'));
+  assert(resRefl.statusCode === 200 && !resRefl.body.includes('<script>alert(1)</script>'), 'returnUrl is not reflected as raw HTML');
+
+  // S4. Stored XSS is escaped when rendered
+  const payload = '<img src=x onerror=alert(1)>';
+  await post('/Application/Submit', 'app_type=Test&reason=' + encodeURIComponent(payload), { Cookie: heCookie });
+  const resApps = await get('/Application', heCookie);
+  assert(!resApps.body.includes(payload) && resApps.body.includes('&lt;img src=x onerror=alert(1)&gt;'), 'Stored application text is HTML-escaped');
+
+  // S5. Cross-site POST is blocked (CSRF)
+  const resCsrf = await post('/Finance/Topup', 'amount=500000&method=' + encodeURIComponent('Ví MoMo'), { Cookie: heCookie, Origin: 'https://evil.example' });
+  assert(resCsrf.statusCode === 403, 'Cross-origin POST is rejected with 403');
+
+  // S6. Top-up limits enforced
+  const resBig = await post('/Finance/Topup', 'amount=1e12&method=' + encodeURIComponent('Ví MoMo'), { Cookie: heCookie });
+  assert(resBig.headers.location === '/Finance/Topup?error=invalid', 'Huge top-up amount is rejected');
+  const resMethod = await post('/Finance/Topup', 'amount=500000&method=' + encodeURIComponent('<b>x</b>'), { Cookie: heCookie });
+  assert(resMethod.headers.location === '/Finance/Topup?error=invalid', 'Unknown top-up method is rejected');
+
+  // S7. Cart error message cannot be injected through the URL
+  const resErr = await get('/ShoppingCart?error=' + encodeURIComponent('<script>x()</script>'), heCookie);
+  assert(resErr.statusCode === 200 && !resErr.body.includes('<script>x()</script>'), 'Cart error text from URL is not rendered');
+
+  // S8. Wrong password rejected
+  const resWrong = await post('/Auth/Login', 'username=SE180123&password=nope');
+  assert(resWrong.headers.location.includes('error=invalid_credentials'), 'Wrong password is rejected');
+
+  // S9. Security headers present
+  assert(resRefl.headers['x-frame-options'] === 'DENY' && resRefl.headers['x-content-type-options'] === 'nosniff' && !resRefl.headers['x-powered-by'], 'Security headers set and x-powered-by hidden');
+
+  // S10. Unknown page returns 404 status
+  const res404 = await get('/does-not-exist', heCookie);
+  assert(res404.statusCode === 404, 'Unknown route returns 404');
 
   // 16. Logout test
   const resLogout = await request({
@@ -235,7 +304,7 @@ async function runTests() {
 }
 
 // Start server first if needed
-const serverProc = require('child_process').spawn('node', ['server.js'], { stdio: 'inherit' });
+const serverProc = require('child_process').spawn(process.execPath, ['server.js'], { stdio: 'inherit', env: { ...process.env, PORT: String(Number(process.env.PORT) || 3000) } });
 setTimeout(async () => {
   try {
     await runTests();

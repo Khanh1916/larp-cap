@@ -166,6 +166,26 @@ Truy cập trình duyệt: **`http://localhost:3000/`** (Tự động chuyển h
 
 Kiểm thử tự động:
 ```bash
-node test_auth_and_semesters.js  # 18/18 test case Đăng nhập & Đa học kỳ đạt 100%
+node test_auth_and_semesters.js  # Đăng nhập, đa học kỳ & kiểm thử bảo mật (34 test case)
 node audit_links.js               # 41/41 routes liên kết nội bộ đạt 100%
 ```
+
+---
+
+## 7. Cấu hình & Bảo mật
+
+Biến môi trường (xem `.env.example`):
+
+| Biến | Ý nghĩa |
+|---|---|
+| `NODE_ENV` | `production` bật cookie `Secure`, HSTS và **tắt** các lối tắt demo |
+| `SESSION_SECRET` | Chuỗi bí mật dùng để ký cookie phiên (bắt buộc khi chạy production) |
+| `DEMO_LOGIN` | `true` để bật lại đăng nhập 1-click / chuyển tài khoản kể cả ở production |
+
+Các cơ chế bảo vệ (`security.js`):
+- Cookie phiên `cap_user` được **ký** (không giả mạo được), `HttpOnly`, `SameSite=Lax`.
+- Mật khẩu được băm bằng **scrypt**; dữ liệu cũ dạng chữ thường tự động được băm khi khởi động.
+- Khóa đăng nhập 15 phút sau 10 lần nhập sai (theo IP + tài khoản).
+- Mọi dữ liệu hiển thị đều được **escape HTML** (chống XSS); `returnUrl` chỉ chấp nhận đường dẫn nội bộ.
+- Chặn request POST đến từ origin khác (chống CSRF); thêm các header `X-Frame-Options`, `nosniff`, `Referrer-Policy`.
+- Nạp tiền ví (giả lập) giới hạn 50.000 – 50.000.000 VND; thanh toán chạy trong transaction, không trừ tiền hai lần.

@@ -9,3 +9,10 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 22.13.0
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      # Set to "true" to keep the 1-click demo login / switch-account shortcuts online.
+      - key: DEMO_LOGIN
+        value: "false"

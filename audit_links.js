@@ -12,6 +12,13 @@ while ((m = regex.exec(html)) !== null) {
 }
 
 async function audit() {
+  const loginRes = await fetch('http://localhost:3000/Auth/Login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'username=CT193667&password=123456',
+    redirect: 'manual'
+  });
+  const sessionCookie = loginRes.headers.getSetCookie().find(c => c.startsWith('cap_user=')).split(';')[0];
   console.log(`Auditing ${links.size} unique internal app links:`);
   let authenticatedPassed = 0;
   let unauthenticatedRedirects = 0;
@@ -21,7 +28,7 @@ async function audit() {
     try {
       // 1. Authenticated test
       const resAuth = await fetch('http://localhost:3000' + url, {
-        headers: { 'Cookie': 'cap_user=CT193667' },
+        headers: { 'Cookie': sessionCookie },
         redirect: 'manual'
       });
       if (resAuth.status >= 200 && resAuth.status < 400) {

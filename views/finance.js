@@ -138,9 +138,10 @@ function renderTransactions({ transactions, student }) {
   `;
 }
 
-function renderTopup({ student, successMsg = null }) {
+function renderTopup({ student, successMsg = null, errorMsg = null }) {
   return `
     ${successMsg ? `<div class="alert alert-success"><i class="ri-checkbox-circle-line me-1"></i>${successMsg}</div>` : ''}
+    ${errorMsg ? `<div class="alert alert-danger"><i class="ri-error-warning-line me-1"></i>${errorMsg}</div>` : ''}
 
     <div class="row justify-content-center">
       <div class="col-lg-6">

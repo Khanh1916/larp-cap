@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const i18n = require('../i18n');
 
-function renderLayout({ title, currentPath = '/', content = '', student, lang = 'vi' }) {
+// NOTE: `title` and `student` must already be HTML-escaped by the caller (see renderPage in server.js).
+function renderLayout({ title, currentPath = '/', content = '', student, lang = 'vi', demoMode = false }) {
   const dict = i18n.getDictionary(lang);
   const isEn = lang === 'en';
   const roll = student ? student.roll_number : 'CT193667';
@@ -526,13 +527,13 @@ function renderLayout({ title, currentPath = '/', content = '', student, lang = 
                             </div>
                             <a class="dropdown-item" href="/Account">
                                 <i class="ri-account-circle-fill align-middle me-1"></i>
-                                <span>${dict.navWallet}</span>
+                                <span>${dict.myAccount}</span>
                             </a>
                             <a class="dropdown-item" href="/StudentProfile">
                                 <i class="ri-user-settings-line align-middle me-1"></i>
                                 <span>${isEn ? 'Update Profile' : 'Cập nhật hồ sơ'}</span>
                             </a>
-                            <div class="dropdown-divider my-1"></div>
+                            ${demoMode ? `<div class="dropdown-divider my-1"></div>
                             <div class="dropdown-header noti-title py-1">
                                 <small class="text-muted text-uppercase fw-bold">${dict.switchAccount}</small>
                             </div>
@@ -541,7 +542,7 @@ function renderLayout({ title, currentPath = '/', content = '', student, lang = 
                             </a>
                             <a class="dropdown-item py-1 ${roll === 'SE180123' ? 'active' : ''}" href="/Auth/SwitchUser/SE180123">
                                 <i class="ri-user-shared-line me-1 text-success"></i>SE180123 (${isEn ? 'Hoang Long' : 'Hoàng Long'} - K18 SE)
-                            </a>
+                            </a>` : ''}
                             <div class="dropdown-divider my-1"></div>
                             <a class="dropdown-item text-danger" href="/Auth/Logout">
                                 <i class="ri-logout-box-fill align-middle me-1"></i>
